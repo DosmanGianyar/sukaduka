@@ -1,0 +1,58 @@
+# CLAUDE.md — Agent & Development Guide for Suka Duka Sekolah
+
+## Aplikasi Suka Duka Guru & Pegawai — SMAN 1 Gianyar
+- **Server:** Proxmox LXC Container `110` (`apps-dosman`)
+- **Deployment:** Git pull + PM2 restart via `plink`
+
+---
+
+## ⚡ ATURAN UTAMA: TRIGGER "claude.md" (COMMIT + PUSH + DEPLOY OTOMATIS)
+
+> [!IMPORTANT]
+> **KETIKA USER MENGETIK `claude.md`:**
+> AI Agent **WAJIB LANGSUNG MENGEKSEKUSI** urutan perintah berikut secara otomatis tanpa menunggu konfirmasi tambahan:
+> 1. Stage semua perubahan: `git add .`
+> 2. Buat commit: `git commit -m "<deskripsi_perubahan_terbaru>"`
+> 3. Push ke GitHub: `git push origin main`
+> 4. Deploy/Pull ke server production via `plink`:
+>    ```powershell
+>    plink -batch -hostkey "SHA256:jFKUNtW1LhnnH0PJM4Jr5lbXhEYxYOzg4iFdlbsb2hI" -pw Dosman123 dosman@100.76.239.63 "cd /home/dosman/apps/sukaduka && git pull origin main && npm install --omit=dev && pm2 restart sukaduka"
+>    ```
+
+---
+
+## 🔑 Kredensial & Informasi Server Satelit (Proxmox LXC)
+
+| Parameter | Nilai |
+| :--- | :--- |
+| **Node Proxmox Host** | `100.102.109.39` (`proxmox-8006`) |
+| **Container ID** | `110` (`apps-dosman`) |
+| **Host / IP Tailscale** | `100.76.239.63` (`apps-dosman`) |
+| **IP Lokal Rack** | `192.168.50.246` |
+| **URL Web Aplikasi** | `http://100.76.239.63` |
+| **Path Proyek di Server** | `/home/dosman/apps/sukaduka` |
+| **SSH Username** | `dosman` |
+| **SSH & Sudo Password** | `Dosman123` |
+| **Host Key Fingerprint (`plink`)**| `SHA256:jFKUNtW1LhnnH0PJM4Jr5lbXhEYxYOzg4iFdlbsb2hI` |
+| **Branch Utama** | `main` |
+| **Git Remote** | `origin` (`https://github.com/DosmanGianyar/sukaduka.git`) |
+| **PM2 Process Name** | `sukaduka` |
+
+---
+
+## 💻 Perintah Sekali Jalan (All-in-One One-Liner PowerShell)
+
+Jika ingin menjalankan secara manual di terminal PowerShell Windows:
+
+```powershell
+git add . ; git commit -m "deploy: update aplikasi sukaduka" ; git push origin main ; plink -batch -hostkey "SHA256:jFKUNtW1LhnnH0PJM4Jr5lbXhEYxYOzg4iFdlbsb2hI" -pw Dosman123 dosman@100.76.239.63 "cd /home/dosman/apps/sukaduka && git pull origin main && npm install --omit=dev && pm2 restart sukaduka"
+```
+
+---
+
+## 🛠️ Stack & Arsitektur
+- **OS:** Ubuntu 24.04 LTS (Noble Numbat)
+- **Runtime:** Node.js v22.23.4 LTS + Express.js
+- **Process Manager:** PM2 (auto-start on boot via systemd `pm2-dosman`)
+- **Web Reverse Proxy:** Nginx (Port 80 -> Port 3000)
+- **Database:** SQLite 3 (`data/sukaduka.db`)
