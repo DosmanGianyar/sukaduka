@@ -55,12 +55,6 @@ async function apiFetch(url, options = {}) {
 
 // ================= AUTHENTICATION =================
 
-function quickFill(user, pw) {
-  document.getElementById('loginUsername').value = user;
-  document.getElementById('loginPassword').value = pw;
-  document.getElementById('btnLogin').click();
-}
-
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const username = document.getElementById('loginUsername').value;
