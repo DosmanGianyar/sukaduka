@@ -27,9 +27,10 @@
 | :--- | :--- |
 | **Node Proxmox Host** | `100.102.109.39` (`proxmox-8006`) |
 | **Container ID** | `110` (`apps-dosman`) |
+| **URL Web Publik** | **`http://36.93.15.146:3001`** |
 | **Host / IP Tailscale** | `100.76.239.63` (`apps-dosman`) |
-| **IP Lokal Rack** | `192.168.50.246` |
-| **URL Web Aplikasi** | `http://100.76.239.63` |
+| **IP Lokal Rack** | `192.168.50.246` (DHCP Static Lease di MikroTik) |
+| **Router MikroTik** | `192.168.50.1` (RB3011UiAS) |
 | **Path Proyek di Server** | `/home/dosman/apps/sukaduka` |
 | **SSH Username** | `dosman` |
 | **SSH & Sudo Password** | `Dosman123` |
@@ -56,3 +57,4 @@ git add . ; git commit -m "deploy: update aplikasi sukaduka" ; git push origin m
 - **Process Manager:** PM2 (auto-start on boot via systemd `pm2-dosman`)
 - **Web Reverse Proxy:** Nginx (Port 80 -> Port 3000)
 - **Database:** SQLite 3 (`data/sukaduka.db`)
+
