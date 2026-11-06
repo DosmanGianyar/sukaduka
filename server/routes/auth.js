@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { generateToken, authMiddleware, hashPassword, comparePassword } = require('../auth');
+const { logActivity } = require('../logger');
 
 // POST /api/auth/login
 router.post('/login', (req, res) => {
@@ -20,6 +21,15 @@ router.post('/login', (req, res) => {
     httpOnly: true,
     maxAge: 7 * 24 * 60 * 60 * 1000,
     sameSite: 'lax'
+  });
+
+  // Catat riwayat login
+  logActivity({ user, headers: req.headers, socket: req.socket, ip: req.ip }, {
+    module: 'AUTH',
+    action_type: 'LOGIN',
+    target_name: user.full_name,
+    period: new Date().toLocaleDateString('id-ID'),
+    description: `Login Pengurus: ${user.full_name} (${user.role}) berhasil masuk ke aplikasi`
   });
 
   res.json({

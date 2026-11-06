@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { authMiddleware } = require('../auth');
+const { logActivity } = require('../logger');
 
 router.use(authMiddleware);
 
@@ -71,6 +72,7 @@ router.post('/', (req, res) => {
   const expense_no = (maxNo && maxNo.max_no) ? maxNo.max_no + 1 : 1;
 
   try {
+    const numAmount = parseFloat(amount);
     const result = db.prepare(`
       INSERT INTO expenses (expense_no, date, year, month, period_label, recipient_name, member_id, category, section, amount, notes)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -84,9 +86,18 @@ router.post('/', (req, res) => {
       member_id || null,
       category || 'Lain-lain',
       section || 'Pengeluaran',
-      parseFloat(amount),
+      numAmount,
       notes ? notes.trim() : null
     );
+
+    logActivity(req, {
+      module: 'PENGELUARAN',
+      action_type: 'CREATE',
+      target_name: recipient_name.trim(),
+      period: `${month}/${year}`,
+      amount: numAmount,
+      description: `Input Pengeluaran: Santunan ${category || 'Lain-lain'} untuk ${recipient_name.trim()} sebesar Rp ${numAmount.toLocaleString('id-ID')}`
+    });
 
     res.json({ message: 'Pengeluaran berhasil disimpan', id: result.lastInsertRowid });
   } catch (err) {
@@ -104,8 +115,11 @@ router.put('/:id', (req, res) => {
   const d = new Date(date);
   const year = d.getFullYear();
   const month = d.getMonth() + 1;
+  const numAmount = parseFloat(amount);
 
   try {
+    const existing = db.prepare('SELECT * FROM expenses WHERE id = ?').get(req.params.id);
+
     db.prepare(`
       UPDATE expenses
       SET date = ?, year = ?, month = ?, period_label = ?, recipient_name = ?, member_id = ?, category = ?, section = ?, amount = ?, notes = ?
@@ -119,10 +133,19 @@ router.put('/:id', (req, res) => {
       member_id || null,
       category,
       section,
-      parseFloat(amount),
+      numAmount,
       notes ? notes.trim() : null,
       req.params.id
     );
+
+    logActivity(req, {
+      module: 'PENGELUARAN',
+      action_type: 'UPDATE',
+      target_name: recipient_name.trim(),
+      period: `${month}/${year}`,
+      amount: numAmount,
+      description: `Edit Pengeluaran (ID: ${req.params.id}): Santunan ${category} untuk ${recipient_name.trim()} sebesar Rp ${numAmount.toLocaleString('id-ID')}`
+    });
 
     res.json({ message: 'Pengeluaran berhasil diperbarui' });
   } catch (err) {
@@ -133,7 +156,20 @@ router.put('/:id', (req, res) => {
 // DELETE /api/expenses/:id
 router.delete('/:id', (req, res) => {
   try {
+    const existing = db.prepare('SELECT * FROM expenses WHERE id = ?').get(req.params.id);
     db.prepare('DELETE FROM expenses WHERE id = ?').run(req.params.id);
+
+    if (existing) {
+      logActivity(req, {
+        module: 'PENGELUARAN',
+        action_type: 'DELETE',
+        target_name: existing.recipient_name,
+        period: `${existing.month}/${existing.year}`,
+        amount: existing.amount,
+        description: `Hapus Pengeluaran: Santunan ${existing.category} untuk ${existing.recipient_name} sebesar Rp ${existing.amount.toLocaleString('id-ID')}`
+      });
+    }
+
     res.json({ message: 'Pengeluaran berhasil dihapus' });
   } catch (err) {
     res.status(500).json({ error: err.message });

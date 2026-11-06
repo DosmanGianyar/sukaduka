@@ -10,6 +10,7 @@ const expenseRoutes = require('./routes/expenses');
 const summaryRoutes = require('./routes/summary');
 const reportRoutes = require('./routes/reports');
 const settingRoutes = require('./routes/settings');
+const logRoutes = require('./routes/logs');
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/summary', summaryRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/settings', settingRoutes);
+app.use('/api/logs', logRoutes);
 
 // Health check endpoint for cloud/server monitoring
 app.get('/health', (req, res) => {

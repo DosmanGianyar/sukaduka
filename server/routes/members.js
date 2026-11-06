@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { authMiddleware } = require('../auth');
+const { logActivity } = require('../logger');
 
 // All member routes require auth
 router.use(authMiddleware);
@@ -111,6 +112,14 @@ router.post('/', (req, res) => {
     });
     initContrib();
 
+    logActivity(req, {
+      module: 'ANGGOTA',
+      action_type: 'CREATE',
+      target_name: name.trim(),
+      period: `Mulai ${jMonth}/${jYear}`,
+      description: `Tambah Anggota Baru: ${name.trim()} (${type}, Status: ${status})`
+    });
+
     res.json({ message: 'Anggota berhasil ditambahkan', id: newId });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -169,6 +178,14 @@ router.put('/:id', (req, res) => {
       `).run(req.params.id, pYear, pYear, pMonth);
     }
 
+    logActivity(req, {
+      module: 'ANGGOTA',
+      action_type: 'UPDATE',
+      target_name: name.trim(),
+      period: `Status: ${status}`,
+      description: `Edit Data Anggota: ${name.trim()} (${type}, Status: ${status})`
+    });
+
     res.json({ message: 'Data anggota berhasil diperbarui' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -178,7 +195,18 @@ router.put('/:id', (req, res) => {
 // DELETE /api/members/:id
 router.delete('/:id', (req, res) => {
   try {
+    const existing = db.prepare('SELECT name FROM members WHERE id = ?').get(req.params.id);
     db.prepare('DELETE FROM members WHERE id = ?').run(req.params.id);
+
+    if (existing) {
+      logActivity(req, {
+        module: 'ANGGOTA',
+        action_type: 'DELETE',
+        target_name: existing.name,
+        description: `Hapus Anggota: Menghapus data anggota ${existing.name} beserta seluruh riwayat iurannya`
+      });
+    }
+
     res.json({ message: 'Anggota dan riwayat iuran terkait berhasil dihapus' });
   } catch (err) {
     res.status(500).json({ error: err.message });

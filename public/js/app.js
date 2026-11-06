@@ -126,7 +126,7 @@ function initApp() {
 
 function switchTab(tab) {
   currentTab = tab;
-  const tabs = ['dashboard', 'contributions', 'expenses', 'members', 'reports', 'settings'];
+  const tabs = ['dashboard', 'contributions', 'expenses', 'members', 'reports', 'logs', 'settings'];
 
   tabs.forEach(t => {
     const btn = document.getElementById(`nav-${t}`);
@@ -149,6 +149,7 @@ function switchTab(tab) {
   if (tab === 'expenses') loadExpenses();
   if (tab === 'members') loadMembers();
   if (tab === 'reports') loadReportPreview();
+  if (tab === 'logs') loadLogs(1);
   if (tab === 'settings') loadSettings();
 }
 
@@ -1055,6 +1056,179 @@ async function deleteUser(id) {
     loadUserList();
   } catch (err) {
     showToast(err.message, 'error');
+  }
+}
+
+// ================= 7. LOG AKTIVITAS / AUDIT TRAIL =================
+let currentLogPage = 1;
+let logSearchDebounce = null;
+
+function debounceLogSearch() {
+  clearTimeout(logSearchDebounce);
+  logSearchDebounce = setTimeout(() => {
+    loadLogs(1);
+  }, 350);
+}
+
+async function loadLogs(page = 1) {
+  currentLogPage = page;
+  const module = document.getElementById('logFilterModule')?.value || 'ALL';
+  const date_filter = document.getElementById('logFilterDate')?.value || 'ALL';
+  const search = document.getElementById('logSearchInput')?.value || '';
+
+  const tbody = document.getElementById('logsTableBody');
+  if (!tbody) return;
+
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="6" class="py-8 text-center text-slate-400">
+        <div class="inline-block animate-spin w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full mb-1"></div>
+        <p class="text-xs">Memuat catatan log aktivitas...</p>
+      </td>
+    </tr>
+  `;
+
+  try {
+    const [data, stats] = await Promise.all([
+      apiFetch(`/api/logs?page=${page}&limit=50&module=${module}&date_filter=${date_filter}&search=${encodeURIComponent(search)}`),
+      apiFetch('/api/logs/stats')
+    ]);
+
+    // Update stats cards
+    if (stats) {
+      if (document.getElementById('logStatTodayCount')) {
+        document.getElementById('logStatTodayCount').innerText = (stats.todayCount || 0) + ' aksi';
+      }
+      if (document.getElementById('logStatTodayIncome')) {
+        document.getElementById('logStatTodayIncome').innerText = 'Rp ' + (stats.todayIncomeChange || 0).toLocaleString('id-ID');
+      }
+      if (document.getElementById('logStatTodayExpense')) {
+        document.getElementById('logStatTodayExpense').innerText = 'Rp ' + (stats.todayExpenseChange || 0).toLocaleString('id-ID');
+      }
+      if (document.getElementById('logStatActiveUser')) {
+        document.getElementById('logStatActiveUser').innerText = stats.activeUser || '-';
+      }
+    }
+
+    if (!data.logs || data.logs.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="py-12 text-center text-slate-400">
+            <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+            <p class="font-medium text-slate-600 text-sm">Belum ada riwayat aktivitas yang tercatat</p>
+            <p class="text-xs text-slate-400 mt-1">Setiap klik bayar, ubah iuran, atau input pengeluaran akan otomatis tercatat di sini.</p>
+          </td>
+        </tr>
+      `;
+      lucide.createIcons();
+      if (document.getElementById('logPaginationInfo')) {
+        document.getElementById('logPaginationInfo').innerText = 'Menampilkan 0 catatan';
+      }
+      if (document.getElementById('logPaginationButtons')) {
+        document.getElementById('logPaginationButtons').innerHTML = '';
+      }
+      return;
+    }
+
+    tbody.innerHTML = data.logs.map(log => {
+      // Badge Modul
+      let moduleBadge = '';
+      if (log.module === 'IURAN') {
+        moduleBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Iuran</span>';
+      } else if (log.module === 'PENGELUARAN') {
+        moduleBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">Pengeluaran</span>';
+      } else if (log.module === 'ANGGOTA') {
+        moduleBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">Anggota</span>';
+      } else if (log.module === 'AUTH') {
+        moduleBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">Sesi Login</span>';
+      } else {
+        moduleBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-800">${log.module}</span>`;
+      }
+
+      // Format nominal
+      let amountHtml = '-';
+      if (log.amount && log.amount > 0) {
+        if (log.module === 'IURAN') {
+          amountHtml = `<span class="font-bold text-emerald-600">+Rp ${log.amount.toLocaleString('id-ID')}</span>`;
+        } else if (log.module === 'PENGELUARAN') {
+          amountHtml = `<span class="font-bold text-amber-600">-Rp ${log.amount.toLocaleString('id-ID')}</span>`;
+        } else {
+          amountHtml = `<span class="font-medium text-slate-700">Rp ${log.amount.toLocaleString('id-ID')}</span>`;
+        }
+      }
+
+      // Format waktu
+      let timeFormatted = log.created_at || '';
+      try {
+        const d = new Date(log.created_at.replace(' ', 'T'));
+        if (!isNaN(d.getTime())) {
+          timeFormatted = d.toLocaleString('id-ID', {
+            day: '2-digit', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+          });
+        }
+      } catch (e) {}
+
+      return `
+        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+          <td class="py-2.5 px-4 font-mono text-slate-500 whitespace-nowrap text-[11px]">
+            <i data-lucide="clock" class="w-3 h-3 inline mr-1 text-slate-400"></i>${timeFormatted}
+          </td>
+          <td class="py-2.5 px-4 font-medium text-slate-800">
+            <div class="font-semibold text-slate-900">${log.user_name || 'Sistem'}</div>
+            <div class="text-[10px] text-slate-400 uppercase font-mono">${log.user_role || '-'} (${log.username || '-'})</div>
+          </td>
+          <td class="py-2.5 px-3 text-center whitespace-nowrap">
+            ${moduleBadge}
+          </td>
+          <td class="py-2.5 px-4 font-medium text-slate-800">
+            <span class="text-slate-900 font-semibold">${log.target_name || '-'}</span>
+            ${log.period ? `<span class="block text-[10px] text-slate-400 font-normal">${log.period}</span>` : ''}
+          </td>
+          <td class="py-2.5 px-4 text-slate-700 leading-relaxed text-xs">
+            ${log.description}
+          </td>
+          <td class="py-2.5 px-4 text-right whitespace-nowrap">
+            ${amountHtml}
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    lucide.createIcons();
+
+    // Render pagination
+    const { total, page: curP, totalPages, limit: curL } = data.pagination;
+    const startNum = total === 0 ? 0 : (curP - 1) * curL + 1;
+    const endNum = Math.min(curP * curL, total);
+    if (document.getElementById('logPaginationInfo')) {
+      document.getElementById('logPaginationInfo').innerText = `Menampilkan ${startNum} - ${endNum} dari total ${total} catatan aktivitas`;
+    }
+
+    let paginationBtns = '';
+    if (totalPages > 1) {
+      if (curP > 1) {
+        paginationBtns += `<button onclick="loadLogs(${curP - 1})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700">Prev</button>`;
+      }
+      paginationBtns += `<span class="px-3 py-1 font-semibold text-slate-700">Hal ${curP} / ${totalPages}</span>`;
+      if (curP < totalPages) {
+        paginationBtns += `<button onclick="loadLogs(${curP + 1})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700">Next</button>`;
+      }
+    }
+    if (document.getElementById('logPaginationButtons')) {
+      document.getElementById('logPaginationButtons').innerHTML = paginationBtns;
+    }
+
+  } catch (err) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="py-8 text-center text-red-500">
+          <i data-lucide="alert-circle" class="w-6 h-6 mx-auto mb-2"></i>
+          <span>Gagal memuat log aktivitas: ${err.message}</span>
+        </td>
+      </tr>
+    `;
+    lucide.createIcons();
   }
 }
 

@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { authMiddleware } = require('../auth');
+const { logActivity } = require('../logger');
+
+const MONTH_NAMES = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
 router.use(authMiddleware);
 
@@ -166,6 +169,16 @@ router.post('/cell', (req, res) => {
       paid_at = CURRENT_DATE
   `).run(member_id, year, month, numAmount, cellStatus, notes || null);
 
+  const periodLabel = `${MONTH_NAMES[month] || month} ${year}`;
+  logActivity(req, {
+    module: 'IURAN',
+    action_type: 'SET_CELL',
+    target_name: member?.name,
+    period: periodLabel,
+    amount: numAmount,
+    description: `Ubah status iuran ${periodLabel} untuk ${member?.name} menjadi ${cellStatus} (Rp ${numAmount.toLocaleString('id-ID')})${notes ? ' - Catatan: ' + notes : ''}`
+  });
+
   res.json({ message: 'Iuran berhasil disimpan', member_id, year, month, amount: numAmount, status: cellStatus });
 });
 
@@ -210,6 +223,27 @@ router.post('/quick-pay', (req, res) => {
       paid_at = CURRENT_DATE
   `).run(member_id, year, month, newAmount, newStatus);
 
+  const periodLabel = `${MONTH_NAMES[month] || month} ${year}`;
+  if (newStatus === 'LUNAS') {
+    logActivity(req, {
+      module: 'IURAN',
+      action_type: 'TOGGLE',
+      target_name: member?.name,
+      period: periodLabel,
+      amount: newAmount,
+      description: `Klik Cepat: Menandai LUNAS iuran ${periodLabel} untuk ${member?.name} (Rp ${newAmount.toLocaleString('id-ID')})`
+    });
+  } else {
+    logActivity(req, {
+      module: 'IURAN',
+      action_type: 'TOGGLE',
+      target_name: member?.name,
+      period: periodLabel,
+      amount: 0,
+      description: `Klik Cepat: Membatalkan status lunas iuran ${periodLabel} untuk ${member?.name}`
+    });
+  }
+
   res.json({ message: 'Status iuran berhasil diubah', amount: newAmount, status: newStatus });
 });
 
@@ -249,6 +283,17 @@ router.post('/batch-month', (req, res) => {
     }
   });
   runBatch();
+
+  const periodLabel = `${MONTH_NAMES[numMonth] || numMonth} ${numYear}`;
+  const totalBatch = activeMembers.length * numAmount;
+  logActivity(req, {
+    module: 'IURAN',
+    action_type: 'BATCH_PAY',
+    target_name: `${activeMembers.length} Anggota Aktif`,
+    period: periodLabel,
+    amount: totalBatch,
+    description: `Bayar kolektif serentak ${activeMembers.length} anggota aktif bulan ${periodLabel} (Total Rp ${totalBatch.toLocaleString('id-ID')})`
+  });
 
   res.json({
     message: `Berhasil mengeset iuran bulan ${numMonth}/${numYear} lunas untuk ${activeMembers.length} anggota aktif`,
