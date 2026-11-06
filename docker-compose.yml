@@ -1,0 +1,15 @@
+services:
+  sukaduka-app:
+    build: .
+    container_name: sukaduka_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PORT=3000
+      - HOST=0.0.0.0
+      - NODE_ENV=production
+      - JWT_SECRET=sukaduka-secret-production-server-key-2026
+

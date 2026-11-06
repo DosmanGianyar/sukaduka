@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Rekap Suka Duka Guru & Pegawai</title>
+  <!-- Favicon Khusus Suka Duka (Bukan Favicon Dosman) -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/favicon.svg">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col font-sans">
+
+  <!-- ================= AUTH VIEW (LOGIN SCREEN) ================= -->
+  <div id="authView" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-900 via-slate-900 to-slate-950 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-800/20">
+      <div class="p-8 text-center bg-gradient-to-b from-emerald-800 to-emerald-900 text-white relative">
+        <div class="inline-block p-1 bg-white/10 rounded-full mb-3 shadow-inner">
+          <img src="/img/logo-sukaduka.svg" alt="Logo Suka Duka" class="w-20 h-20 drop-shadow-xl rounded-full">
+        </div>
+        <h1 class="text-xl font-extrabold tracking-tight">SUKA DUKA SEKOLAH</h1>
+        <p class="text-emerald-200 text-xs mt-1 font-medium">Sistem Rekapitulasi Iuran & Kas Guru dan Pegawai</p>
+      </div>
+
+      <div class="p-8">
+        <form id="loginForm" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Username</label>
+            <div class="relative">
+              <i data-lucide="user" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+              <input type="text" id="loginUsername" required class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition" placeholder="Masukkan username">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Password</label>
+            <div class="relative">
+              <i data-lucide="lock" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+              <input type="password" id="loginPassword" required class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition" placeholder="Masukkan password">
+            </div>
+          </div>
+
+          <button type="submit" id="btnLogin" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm shadow-lg shadow-emerald-600/30 transition flex items-center justify-center space-x-2">
+            <span>Masuk ke Aplikasi</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </form>
+
+        <div class="mt-6 pt-6 border-t border-slate-100">
+          <p class="text-xs text-slate-500 text-center font-medium mb-3">Login Cepat Akun Pengurus:</p>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <button onclick="quickFill('ketua', 'ketua123')" class="p-2 border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 rounded-lg text-slate-700 font-medium transition text-left flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Ketua (Suwita)
+            </button>
+            <button onclick="quickFill('bendahara', 'bendahara123')" class="p-2 border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 rounded-lg text-slate-700 font-medium transition text-left flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span> Bendahara (Setiawati)
+            </button>
+            <button onclick="quickFill('sekretaris', 'sekretaris123')" class="p-2 border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 rounded-lg text-slate-700 font-medium transition text-left flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span> Sekretaris (Darma)
+            </button>
+            <button onclick="quickFill('admin', 'admin123')" class="p-2 border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 rounded-lg text-slate-700 font-medium transition text-left flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-purple-500"></span> Admin Utama
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MAIN APP VIEW ================= -->
+  <div id="mainAppView" class="hidden flex-1 flex flex-col min-h-screen">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+        <div class="flex items-center space-x-3">
+          <img src="/img/logo-sukaduka.svg" alt="Logo Suka Duka" class="w-10 h-10 drop-shadow rounded-full">
+          <div>
+            <span class="font-extrabold text-base sm:text-lg tracking-tight text-slate-900 block leading-tight">SUKA DUKA SEKOLAH</span>
+            <span id="appSchoolSubtitle" class="text-xs text-slate-500 hidden sm:block">Pengurus Guru & Pegawai</span>
+          </div>
+        </div>
+
+        <!-- User profile & Logout -->
+        <div class="flex items-center space-x-3">
+          <div class="text-right hidden sm:block">
+            <span id="userFullName" class="text-sm font-semibold text-slate-800 block leading-tight">Pengurus</span>
+            <span id="userRoleBadge" class="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">Ketua</span>
+          </div>
+          <button onclick="handleLogout()" title="Keluar Akun" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition">
+            <i data-lucide="log-out" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-100">
+        <nav class="flex space-x-1 sm:space-x-4 overflow-x-auto py-2 text-sm font-medium">
+          <button onclick="switchTab('dashboard')" id="nav-dashboard" class="tab-btn px-3 py-2 rounded-lg text-emerald-700 bg-emerald-50 font-semibold flex items-center space-x-1.5 whitespace-nowrap">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+            <span>Dashboard</span>
+          </button>
+          <button onclick="switchTab('contributions')" id="nav-contributions" class="tab-btn px-3 py-2 rounded-lg text-slate-600 hover:text-emerald-600 hover:bg-slate-50 flex items-center space-x-1.5 whitespace-nowrap">
+            <i data-lucide="table" class="w-4 h-4"></i>
+            <span>Rekap Iuran (Grid)</span>
+          </button>
+          <button onclick="switchTab('expenses')" id="nav-expenses" class="tab-btn px-3 py-2 rounded-lg text-slate-600 hover:text-emerald-600 hover:bg-slate-50 flex items-center space-x-1.5 whitespace-nowrap">
+            <i data-lucide="receipt" class="w-4 h-4"></i>
+            <span>Pengeluaran Santunan</span>
+          </button>
+          <button onclick="switchTab('members')" id="nav-members" class="tab-btn px-3 py-2 rounded-lg text-slate-600 hover:text-emerald-600 hover:bg-slate-50 flex items-center space-x-1.5 whitespace-nowrap">
+            <i data-lucide="users" class="w-4 h-4"></i>
+            <span>Master Anggota</span>
+          </button>
+          <button onclick="switchTab('reports')" id="nav-reports" class="tab-btn px-3 py-2 rounded-lg text-slate-600 hover:text-emerald-600 hover:bg-slate-50 flex items-center space-x-1.5 whitespace-nowrap">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span>Laporan Landscape</span>
+          </button>
+          <button onclick="switchTab('settings')" id="nav-settings" class="tab-btn px-3 py-2 rounded-lg text-slate-600 hover:text-emerald-600 hover:bg-slate-50 flex items-center space-x-1.5 whitespace-nowrap">
+            <i data-lucide="settings" class="w-4 h-4"></i>
+            <span>Pengaturan & Akun</span>
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+      <!-- ================= 1. TAB DASHBOARD ================= -->
+      <section id="tab-dashboard-content" class="space-y-6">
+        <!-- Top Cash Balance Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Saldo Akhir -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Saldo Kas Tersedia</p>
+                <h3 id="dashSaldo" class="text-2xl font-extrabold text-blue-900 mt-1">Rp 0</h3>
+              </div>
+              <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                <i data-lucide="landmark" class="w-6 h-6"></i>
+              </div>
+            </div>
+            <div class="mt-3 flex items-center text-xs text-slate-500">
+              <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></span>
+              Kas bersih siap disalurkan
+            </div>
+          </div>
+
+          <!-- Total Pemasukan -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Pemasukan Iuran</p>
+                <h3 id="dashPemasukan" class="text-2xl font-extrabold text-emerald-700 mt-1">Rp 0</h3>
+              </div>
+              <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                <i data-lucide="arrow-down-left" class="w-6 h-6"></i>
+              </div>
+            </div>
+            <div class="mt-3 flex items-center text-xs text-slate-500">
+              Akumulasi iuran guru & pegawai
+            </div>
+          </div>
+
+          <!-- Total Pengeluaran -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Pengeluaran Santunan</p>
+                <h3 id="dashPengeluaran" class="text-2xl font-extrabold text-red-600 mt-1">Rp 0</h3>
+              </div>
+              <div class="p-3 bg-red-50 text-red-600 rounded-xl">
+                <i data-lucide="arrow-up-right" class="w-6 h-6"></i>
+              </div>
+            </div>
+            <div class="mt-3 flex items-center text-xs text-slate-500">
+              Santunan sakit, duka, nikah, dll.
+            </div>
+          </div>
+
+          <!-- Anggota Aktif -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Anggota</p>
+                <h3 id="dashAnggota" class="text-2xl font-extrabold text-purple-900 mt-1">0 Orang</h3>
+              </div>
+              <div class="p-3 bg-purple-50 text-purple-600 rounded-xl">
+                <i data-lucide="users" class="w-6 h-6"></i>
+              </div>
+            </div>
+            <div class="mt-3 flex items-center text-xs text-slate-500">
+              <span id="dashAnggotaAktif" class="text-emerald-700 font-semibold mr-1">0 Aktif</span>
+              • <span id="dashAnggotaPensiun" class="ml-1 text-amber-700">0 Pensiun</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions & Monthly Bar Breakdown -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Monthly Summary List -->
+          <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+            <div class="flex justify-between items-center mb-4">
+              <div>
+                <h4 class="font-bold text-slate-900 text-base">Arus Kas Bulanan</h4>
+                <p class="text-xs text-slate-500">Pemasukan vs Pengeluaran Tahun <span class="currentYearText font-semibold">2026</span></p>
+              </div>
+              <select id="dashYearSelect" onchange="loadDashboard(this.value)" class="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 bg-slate-50 font-semibold">
+                <option value="2026">Tahun 2026</option>
+                <option value="2025">Tahun 2025</option>
+                <option value="2024">Tahun 2024</option>
+                <option value="2023">Tahun 2023</option>
+                <option value="2022">Tahun 2022</option>
+              </select>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs">
+                <thead>
+                  <tr class="border-b border-slate-100 text-slate-400 font-semibold text-left">
+                    <th class="py-2">Bulan</th>
+                    <th class="py-2 text-right">Pemasukan</th>
+                    <th class="py-2 text-right">Pengeluaran</th>
+                    <th class="py-2 text-right">Selisih Bersih</th>
+                  </tr>
+                </thead>
+                <tbody id="dashMonthlyTableBody" class="divide-y divide-slate-100">
+                  <!-- Generated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Quick Actions & Pejabat Info -->
+          <div class="space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+              <h4 class="font-bold text-slate-900 text-base mb-3">Aksi Cepat</h4>
+              <div class="space-y-2">
+                <button onclick="switchTab('contributions')" class="w-full py-2.5 px-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-semibold rounded-xl text-xs flex items-center justify-between transition">
+                  <span class="flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i> Input Iuran Bulanan</span>
+                  <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+                <button onclick="openExpenseModal()" class="w-full py-2.5 px-4 bg-red-50 hover:bg-red-100 text-red-800 font-semibold rounded-xl text-xs flex items-center justify-between transition">
+                  <span class="flex items-center gap-2"><i data-lucide="plus-circle" class="w-4 h-4 text-red-600"></i> Tambah Pengeluaran Santunan</span>
+                  <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+                <button onclick="switchTab('reports')" class="w-full py-2.5 px-4 bg-blue-50 hover:bg-blue-100 text-blue-800 font-semibold rounded-xl text-xs flex items-center justify-between transition">
+                  <span class="flex items-center gap-2"><i data-lucide="printer" class="w-4 h-4 text-blue-600"></i> Buka Laporan Landscape</span>
+                  <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-5 rounded-2xl shadow-md">
+              <h5 class="text-xs uppercase font-bold tracking-wider text-emerald-400 mb-2">Struktur Pengurus Resmi</h5>
+              <div class="space-y-2 text-xs">
+                <div class="flex justify-between border-b border-slate-700/60 pb-1.5">
+                  <span class="text-slate-400">Ketua</span>
+                  <span class="font-semibold text-slate-200">Nyoman Suwita, S.Pd, M.Pd</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-700/60 pb-1.5">
+                  <span class="text-slate-400">Bendahara</span>
+                  <span class="font-semibold text-slate-200">Wayan Setiawati</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Sekretaris</span>
+                  <span class="font-semibold text-slate-200">I Putu Darma Putra</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 2. TAB REKAP IURAN (GRID 12 BULAN) ================= -->
+      <section id="tab-contributions-content" class="hidden space-y-4">
+        <!-- Control bar -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-3">
+          <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <label class="text-xs font-semibold text-slate-600">Tahun:</label>
+            <select id="gridYearSelect" onchange="loadGrid(this.value)" class="text-sm font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+              <option value="2023">2023</option>
+              <option value="2022">2022</option>
+            </select>
+
+            <label class="text-xs font-semibold text-slate-600 ml-2">Status:</label>
+            <select id="gridStatusSelect" onchange="loadGrid()" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+              <option value="ALL">Semua Anggota</option>
+              <option value="AKTIF">Hanya Aktif</option>
+              <option value="PENSIUN">Pensiun</option>
+            </select>
+
+            <div class="relative flex-1 sm:w-64">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+              <input type="text" id="gridSearchInput" onkeyup="filterGridRows()" placeholder="Cari nama anggota..." class="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+            <button onclick="openBatchMonthModal()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs shadow-sm flex items-center gap-1.5 transition">
+              <i data-lucide="check-check" class="w-4 h-4"></i>
+              <span>Bayar Kolektif 1 Bulan</span>
+            </button>
+            <button onclick="exportExcel()" class="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl text-xs shadow-sm flex items-center gap-1.5 transition">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+              <span>Export Excel</span>
+            </button>
+            <button onclick="openPrintLandscape()" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-xs shadow-sm flex items-center gap-1.5 transition">
+              <i data-lucide="printer" class="w-4 h-4"></i>
+              <span>Cetak Landscape</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Info petunjuk -->
+        <div class="bg-emerald-50 border border-emerald-200/80 rounded-xl px-4 py-2 text-xs text-emerald-800 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="info" class="w-4 h-4 text-emerald-600"></i>
+            <span><strong>Tip Cepat:</strong> Klik langsung pada kotak bulan untuk toggle Lunas (Rp 50.000). Klik kanan atau tahan untuk nominal khusus.</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Lunas</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-slate-300 inline-block"></span> Belum</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> Pensiun</span>
+          </div>
+        </div>
+
+        <!-- The Spreadsheet Grid Table -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden grid-table-container">
+          <table class="w-full text-xs text-left divide-y divide-slate-200">
+            <thead class="bg-slate-100 font-bold text-slate-700 uppercase tracking-wider sticky top-0 z-20">
+              <tr>
+                <th class="py-3 px-3 w-12 text-center">No</th>
+                <th class="py-3 px-3 min-w-[200px]">Nama Anggota</th>
+                <th class="py-3 px-2 text-center w-20">Jan</th>
+                <th class="py-3 px-2 text-center w-20">Feb</th>
+                <th class="py-3 px-2 text-center w-20">Mar</th>
+                <th class="py-3 px-2 text-center w-20">Apr</th>
+                <th class="py-3 px-2 text-center w-20">Mei</th>
+                <th class="py-3 px-2 text-center w-20">Jun</th>
+                <th class="py-3 px-2 text-center w-20">Jul</th>
+                <th class="py-3 px-2 text-center w-20">Agu</th>
+                <th class="py-3 px-2 text-center w-20">Sep</th>
+                <th class="py-3 px-2 text-center w-20">Okt</th>
+                <th class="py-3 px-2 text-center w-20">Nov</th>
+                <th class="py-3 px-2 text-center w-20">Des</th>
+                <th class="py-3 px-3 text-right w-28 bg-slate-200">Total</th>
+              </tr>
+            </thead>
+            <tbody id="gridTableBody" class="divide-y divide-slate-100 font-normal">
+              <!-- Rendered via JS -->
+            </tbody>
+            <tfoot id="gridTableFoot" class="bg-slate-100 font-bold text-slate-800 border-t-2 border-slate-300">
+              <!-- Rendered via JS -->
+            </tfoot>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= 3. TAB PENGELUARAN SANTUNAN ================= -->
+      <section id="tab-expenses-content" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-3">
+          <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <select id="expenseYearFilter" onchange="loadExpenses()" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold">
+              <option value="ALL">Semua Tahun</option>
+              <option value="2026">Tahun 2026</option>
+              <option value="2025">Tahun 2025</option>
+              <option value="2024">Tahun 2024</option>
+              <option value="2023">Tahun 2023</option>
+              <option value="2022">Tahun 2022</option>
+            </select>
+
+            <select id="expenseCategoryFilter" onchange="loadExpenses()" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+              <option value="ALL">Semua Kategori</option>
+              <option value="Sakit">Sakit</option>
+              <option value="Suami Sakit">Suami Sakit</option>
+              <option value="Istri Sakit">Istri Sakit</option>
+              <option value="Melahirkan">Melahirkan</option>
+              <option value="Istri Melahirkan">Istri Melahirkan</option>
+              <option value="Menikah">Menikah</option>
+              <option value="Duka / Meninggal">Duka / Meninggal</option>
+              <option value="Kenang-kenangan Pensiunan">Kenang-kenangan</option>
+            </select>
+
+            <div class="relative">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+              <input type="text" id="expenseSearchInput" onkeyup="loadExpenses()" placeholder="Cari penerima / ket..." class="pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+            </div>
+          </div>
+
+          <button onclick="openExpenseModal()" class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl text-xs shadow flex items-center gap-1.5 transition">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Catat Pengeluaran Baru</span>
+          </button>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center text-xs font-semibold">
+            <span>Daftar Penyaluran Santunan Suka Duka</span>
+            <span class="text-red-700 font-bold" id="expenseTotalSumLabel">Total: Rp 0</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left divide-y divide-slate-100">
+              <thead class="bg-slate-100 text-slate-600 font-bold uppercase tracking-wider">
+                <tr>
+                  <th class="py-3 px-3 w-12 text-center">No</th>
+                  <th class="py-3 px-3 w-28">Tanggal / Bulan</th>
+                  <th class="py-3 px-3">Nama Penerima</th>
+                  <th class="py-3 px-3">Kategori</th>
+                  <th class="py-3 px-3 text-right">Nominal</th>
+                  <th class="py-3 px-3">Keterangan</th>
+                  <th class="py-3 px-3 text-center w-24">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="expensesTableBody" class="divide-y divide-slate-100">
+                <!-- JS populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 4. TAB MASTER ANGGOTA ================= -->
+      <section id="tab-members-content" class="hidden space-y-4">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-3">
+          <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <select id="memberStatusFilter" onchange="loadMembers()" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+              <option value="SEMUA">Semua Status</option>
+              <option value="AKTIF">Aktif</option>
+              <option value="PENSIUN">Pensiun</option>
+            </select>
+
+            <select id="memberTypeFilter" onchange="loadMembers()" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+              <option value="SEMUA">Semua Jabatan</option>
+              <option value="GURU">Guru</option>
+              <option value="PEGAWAI">Pegawai</option>
+            </select>
+
+            <div class="relative flex-1 sm:w-64">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+              <input type="text" id="memberSearchInput" onkeyup="loadMembers()" placeholder="Cari nama atau NIP..." class="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+            </div>
+          </div>
+
+          <button onclick="openMemberModal()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs shadow flex items-center gap-1.5 transition">
+            <i data-lucide="user-plus" class="w-4 h-4"></i>
+            <span>Tambah Anggota Baru</span>
+          </button>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center text-xs font-semibold">
+            <span>Daftar Guru & Pegawai Anggota Suka Duka</span>
+            <span class="text-slate-600" id="memberCountBadge">0 Anggota</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left divide-y divide-slate-100">
+              <thead class="bg-slate-100 text-slate-600 font-bold uppercase tracking-wider">
+                <tr>
+                  <th class="py-3 px-3 w-14 text-center">No</th>
+                  <th class="py-3 px-4">Nama Lengkap</th>
+                  <th class="py-3 px-4">NIP</th>
+                  <th class="py-3 px-3 text-center">Tipe</th>
+                  <th class="py-3 px-3 text-center">Status</th>
+                  <th class="py-3 px-3">Catatan</th>
+                  <th class="py-3 px-3 text-center w-28">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="membersTableBody" class="divide-y divide-slate-100">
+                <!-- JS populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 5. TAB LAPORAN LANDSCAPE ================= -->
+      <section id="tab-reports-content" class="hidden space-y-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+          <div>
+            <h3 class="font-bold text-slate-900 text-base">Laporan Tahunan Siap Cetak (Landscape)</h3>
+            <p class="text-xs text-slate-500">Tata letak landscape mirip format Excel resmi dinas, lengkap dengan ringkasan saldo kas dan tanda tangan 3 pejabat pengurus.</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <select id="reportYearSelect" onchange="loadReportPreview(this.value)" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-emerald-800">
+              <option value="2026">Tahun 2026</option>
+              <option value="2025">Tahun 2025</option>
+              <option value="2024">Tahun 2024</option>
+              <option value="2023">Tahun 2023</option>
+              <option value="2022">Tahun 2022</option>
+            </select>
+            <button onclick="openPrintLandscape()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-xs shadow flex items-center gap-2 transition">
+              <i data-lucide="printer" class="w-4 h-4"></i>
+              <span>Buka Print / Simpan PDF</span>
+            </button>
+            <button onclick="exportExcel()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs shadow flex items-center gap-2 transition">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+              <span>Export ke Excel (.xlsx)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Landscape Preview Container -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+          <div class="min-w-[900px] border border-slate-300 p-6 bg-white rounded-lg">
+            <!-- Kop -->
+            <div class="text-center mb-6">
+              <h2 id="prevSchool" class="font-bold uppercase text-base text-slate-900 tracking-wider">PENGURUS SUKA DUKA GURU DAN PEGAWAI</h2>
+              <h3 class="font-bold text-sm text-slate-800">REKAPITULASI IURAN DAN KAS TAHUN <span id="prevYear">2026</span></h3>
+              <p class="text-[11px] text-slate-500">Format Laporan Resmi Satu Halaman Landscape</p>
+            </div>
+
+            <!-- Preview Table -->
+            <div id="prevTableContainer" class="mb-6">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Ringkasan Saldo Box -->
+            <div class="grid grid-cols-2 gap-4 mb-8 text-xs">
+              <div class="border border-slate-400 p-3 rounded bg-slate-50">
+                <div class="font-bold uppercase border-b border-slate-300 pb-1 mb-2">Rekapitulasi Arus Kas Suka Duka</div>
+                <div class="space-y-1">
+                  <div class="flex justify-between"><span>1. Saldo Kas Awal Tahun</span><span id="prevSaldoAwal" class="font-semibold">Rp 0</span></div>
+                  <div class="flex justify-between text-emerald-800"><span>2. Total Pemasukan Iuran Tahun Ini</span><span id="prevTotalIncome" class="font-bold">Rp 0</span></div>
+                  <div class="flex justify-between text-red-700"><span>3. Total Pengeluaran Santunan Tahun Ini</span><span id="prevTotalExpense" class="font-bold">Rp 0</span></div>
+                  <div class="flex justify-between font-bold border-t border-slate-300 pt-1 text-slate-900 text-sm">
+                    <span>4. Saldo Kas Akhir</span><span id="prevSaldoAkhir" class="text-blue-900">Rp 0</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="border border-slate-400 p-3 rounded bg-slate-50 flex flex-col justify-between">
+                <div>
+                  <div class="font-bold uppercase border-b border-slate-300 pb-1 mb-2">Keterangan & Catatan</div>
+                  <p class="text-slate-600 leading-relaxed text-[11px]">
+                    Laporan ini memuat seluruh transaksi penerimaan iuran wajib anggota serta penyaluran dana sosial santunan suka duka. Saldo kas akhir tersimpan aman di rekening bendahara.
+                  </p>
+                </div>
+                <div class="text-[10px] text-slate-400 text-right">Dicetak otomatis dari Sistem Suka Duka Sekolah</div>
+              </div>
+            </div>
+
+            <!-- Signatures Preview -->
+            <div class="grid grid-cols-3 text-center text-xs mt-8">
+              <div>
+                <p class="text-slate-600">Mengetahui,</p>
+                <p class="font-bold uppercase" id="prevTitleKetua">Ketua</p>
+                <div class="h-16"></div>
+                <p class="font-bold underline text-sm" id="prevNameKetua">Nyoman Suwita, S.Pd, M.Pd</p>
+              </div>
+              <div>
+                <p class="text-transparent">.</p>
+                <p class="font-bold uppercase" id="prevTitleSekretaris">Sekretaris</p>
+                <div class="h-16"></div>
+                <p class="font-bold underline text-sm" id="prevNameSekretaris">I Putu Darma Putra</p>
+              </div>
+              <div>
+                <p class="text-slate-600">Denpasar, <span id="prevDateToday"></span></p>
+                <p class="font-bold uppercase" id="prevTitleBendahara">Bendahara</p>
+                <div class="h-16"></div>
+                <p class="font-bold underline text-sm" id="prevNameBendahara">Wayan Setiawati</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 6. TAB PENGATURAN & USER ================= -->
+      <section id="tab-settings-content" class="hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Form Pengaturan Pejabat & Legalitas -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+              <i data-lucide="building" class="w-5 h-5 text-emerald-600"></i>
+              <h4 class="font-bold text-slate-900 text-base">Identitas & Pejabat Penandatangan</h4>
+            </div>
+
+            <form id="settingsForm" class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Organisasi / Sekolah</label>
+                <input type="text" id="setSchoolName" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500">
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Ketua</label>
+                  <input type="text" id="setLeaderName" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Jabatan Ketua</label>
+                  <input type="text" id="setLeaderTitle" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Bendahara</label>
+                  <input type="text" id="setTreasurerName" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Jabatan Bendahara</label>
+                  <input type="text" id="setTreasurerTitle" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Sekretaris</label>
+                  <input type="text" id="setSecretaryName" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Jabatan Sekretaris</label>
+                  <input type="text" id="setSecretaryTitle" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Nominal Iuran Standar Per Bulan (Rp)</label>
+                <input type="number" id="setDefaultDues" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500">
+              </div>
+
+              <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs shadow transition">
+                Simpan Pengaturan Pejabat
+              </button>
+            </form>
+          </div>
+
+          <!-- Ganti Password & Manajemen User -->
+          <div class="space-y-6">
+            <!-- Ganti Password Saya -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+              <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+                <i data-lucide="key" class="w-5 h-5 text-emerald-600"></i>
+                <h4 class="font-bold text-slate-900 text-base">Ubah Kata Sandi Akun Saya</h4>
+              </div>
+
+              <form id="changePasswordForm" class="space-y-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Tampilan</label>
+                  <input type="text" id="profileFullName" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Password Lama</label>
+                  <input type="password" id="currentPassword" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs" placeholder="Wajib diisi jika ganti password">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Password Baru</label>
+                  <input type="password" id="newPassword" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs" placeholder="Minimal 6 karakter">
+                </div>
+                <button type="submit" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl text-xs transition">
+                  Perbarui Profil & Password
+                </button>
+              </form>
+            </div>
+
+            <!-- Daftar Pengguna Sistem -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+              <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="shield-check" class="w-5 h-5 text-purple-600"></i>
+                  <h4 class="font-bold text-slate-900 text-base">Akun Pengurus</h4>
+                </div>
+                <button onclick="openUserModal()" class="text-xs bg-purple-50 text-purple-700 hover:bg-purple-100 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1 transition">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah User
+                </button>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-xs">
+                  <thead class="bg-slate-50 text-slate-500 font-semibold text-left">
+                    <tr>
+                      <th class="py-2 px-2">Username</th>
+                      <th class="py-2 px-2">Nama</th>
+                      <th class="py-2 px-2 text-center">Peran</th>
+                      <th class="py-2 px-2 text-center">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody id="userListTableBody" class="divide-y divide-slate-100">
+                    <!-- Populated by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-3 text-center text-xs text-slate-400">
+      Sistem Informasi Suka Duka Guru & Pegawai • Siap Online & Responsif
+    </footer>
+  </div>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- 1. Modal Edit Cell Iuran -->
+  <div id="modalCellPay" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200">
+      <h3 class="font-bold text-base text-slate-900 mb-1" id="modalCellTitle">Edit Iuran Anggota</h3>
+      <p class="text-xs text-slate-500 mb-4" id="modalCellSubtitle">Bulan Jan 2026</p>
+
+      <form id="formCellPay" class="space-y-3">
+        <input type="hidden" id="cellMemberId">
+        <input type="hidden" id="cellYear">
+        <input type="hidden" id="cellMonth">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Status Pembayaran</label>
+          <select id="cellStatus" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs">
+            <option value="LUNAS">LUNAS</option>
+            <option value="BELUM">BELUM DIBAYAR</option>
+            <option value="PENSIUN">PENSIUN</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nominal (Rp)</label>
+          <input type="number" id="cellAmount" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold text-emerald-800" value="50000">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Catatan (Opsional)</label>
+          <input type="text" id="cellNotes" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs" placeholder="Misal: transfer / titip bendahara">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('modalCellPay')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-medium">Batal</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Modal Bayar Kolektif 1 Bulan -->
+  <div id="modalBatchMonth" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200">
+      <h3 class="font-bold text-base text-slate-900 mb-1">Bayar Kolektif Satu Bulan</h3>
+      <p class="text-xs text-slate-500 mb-4">Setel pembayaran serentak untuk seluruh anggota yang berstatus AKTIF (cocok untuk potongan gaji otomatis).</p>
+
+      <form id="formBatchMonth" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Bulan</label>
+          <select id="batchMonthSelect" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-semibold">
+            <option value="1">Januari</option>
+            <option value="2">Februari</option>
+            <option value="3">Maret</option>
+            <option value="4">April</option>
+            <option value="5">Mei</option>
+            <option value="6">Juni</option>
+            <option value="7">Juli</option>
+            <option value="8">Agustus</option>
+            <option value="9">September</option>
+            <option value="10">Oktober</option>
+            <option value="11">November</option>
+            <option value="12">Desember</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nominal Per Anggota (Rp)</label>
+          <input type="number" id="batchAmount" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold text-emerald-800" value="50000">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('modalBatchMonth')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-medium">Batal</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold">Proses Sekarang</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. Modal Anggota (Tambah/Edit) -->
+  <div id="modalMember" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+      <h3 class="font-bold text-base text-slate-900 mb-4" id="modalMemberTitle">Tambah Anggota Baru</h3>
+
+      <form id="formMember" class="space-y-3">
+        <input type="hidden" id="memberFormId">
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">No. Urut</label>
+            <input type="number" id="memberFormNo" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs">
+          </div>
+          <div class="col-span-2">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">NIP (Opsional)</label>
+            <input type="text" id="memberFormNip" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs" placeholder="19XXXXXXXX ...">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Lengkap & Gelar</label>
+          <input type="text" id="memberFormName" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs" placeholder="Contoh: I Wayan Sudra Astra, S.Pd., M.Pd.">
+        </div>
+
+        <!-- Mulai Masuk / Bergabung -->
+        <div class="p-3 bg-emerald-50/50 border border-emerald-200/80 rounded-xl space-y-1.5">
+          <div class="text-[11px] font-bold text-emerald-900 flex items-center justify-between">
+            <span class="flex items-center gap-1">
+              <i data-lucide="calendar-plus" class="w-3.5 h-3.5 text-emerald-600"></i>
+              Mulai Masuk / Bergabung Suka Duka:
+            </span>
+            <span class="text-[9px] text-emerald-700 font-normal">Bulan sebelumnya terkunci</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-600 mb-1">Bulan Masuk</label>
+              <select id="memberFormJoinMonth" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold">
+                <option value="1">Januari</option>
+                <option value="2">Februari</option>
+                <option value="3">Maret</option>
+                <option value="4">April</option>
+                <option value="5">Mei</option>
+                <option value="6">Juni</option>
+                <option value="7">Juli</option>
+                <option value="8">Agustus</option>
+                <option value="9">September</option>
+                <option value="10">Oktober</option>
+                <option value="11">November</option>
+                <option value="12">Desember</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-600 mb-1">Tahun Masuk</label>
+              <input type="number" id="memberFormJoinYear" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-bold text-emerald-900" value="2026" min="2020" max="2035">
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Kategori</label>
+            <select id="memberFormType" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs">
+              <option value="GURU">GURU</option>
+              <option value="PEGAWAI">PEGAWAI</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Status Keanggotaan</label>
+            <select id="memberFormStatus" onchange="togglePensiunFields(this.value)" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-semibold">
+              <option value="AKTIF">AKTIF (Bertugas)</option>
+              <option value="PENSIUN">PENSIUN (Purna Tugas)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Detail Bulan & Tahun Pensiun -->
+        <div id="pensiunDetailContainer" class="hidden p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-2">
+          <div class="text-[11px] font-bold text-amber-900 flex items-center gap-1">
+            <i data-lucide="calendar" class="w-3.5 h-3.5 text-amber-600"></i>
+            <span>Mulai Pensiun Pada Bulan & Tahun:</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] font-semibold text-amber-800 mb-1">Bulan Pensiun</label>
+              <select id="memberFormPensiunMonth" class="w-full px-2.5 py-1.5 bg-white border border-amber-300 rounded-lg text-xs font-semibold">
+                <option value="1">Januari</option>
+                <option value="2">Februari</option>
+                <option value="3">Maret</option>
+                <option value="4">April</option>
+                <option value="5">Mei</option>
+                <option value="6">Juni</option>
+                <option value="7">Juli</option>
+                <option value="8">Agustus</option>
+                <option value="9">September</option>
+                <option value="10">Oktober</option>
+                <option value="11">November</option>
+                <option value="12">Desember</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-amber-800 mb-1">Tahun Pensiun</label>
+              <input type="number" id="memberFormPensiunYear" class="w-full px-2.5 py-1.5 bg-white border border-amber-300 rounded-lg text-xs font-bold text-amber-900" value="2025" min="2020" max="2035">
+            </div>
+          </div>
+          <p class="text-[10px] text-amber-700">Mulai bulan & tahun tersebut ke depan, status iuran otomatis menjadi <strong>PENSIUN</strong> dan ditempatkan di kelompok paling bawah.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">No. HP / Catatan</label>
+          <input type="text" id="memberFormNotes" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs" placeholder="No Telp atau catatan tambahan">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('modalMember')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-medium">Batal</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold">Simpan Data</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. Modal Pengeluaran (Tambah/Edit) -->
+  <div id="modalExpense" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+      <h3 class="font-bold text-base text-slate-900 mb-4" id="modalExpenseTitle">Catat Pengeluaran Santunan</h3>
+
+      <form id="formExpense" class="space-y-3">
+        <input type="hidden" id="expenseFormId">
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal Transaksi</label>
+            <input type="date" id="expenseFormDate" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Kategori Santunan</label>
+            <select id="expenseFormCategory" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs">
+              <option value="Sakit">Sakit</option>
+              <option value="Suami Sakit">Suami Sakit</option>
+              <option value="Istri Sakit">Istri Sakit</option>
+              <option value="Melahirkan">Melahirkan</option>
+              <option value="Istri Melahirkan">Istri Melahirkan</option>
+              <option value="Menikah">Menikah</option>
+              <option value="Duka / Meninggal">Duka / Meninggal</option>
+              <option value="Kenang-kenangan Pensiunan">Kenang-kenangan</option>
+              <option value="Lain-lain">Lain-lain</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Nama Penerima dengan Auto-Search Anggota Guru/Pegawai -->
+        <div class="relative">
+          <input type="hidden" id="expenseFormMemberId">
+          <div class="flex justify-between items-center mb-1">
+            <label class="block text-xs font-semibold text-slate-600">Nama Penerima</label>
+            <span class="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
+              <i data-lucide="sparkles" class="w-3 h-3 text-emerald-500"></i> Cari otomatis dari data guru
+            </span>
+          </div>
+          <div class="relative">
+            <input
+              type="text"
+              id="expenseFormRecipient"
+              required
+              autocomplete="off"
+              onfocus="showRecipientDropdown()"
+              oninput="filterRecipientDropdown(this.value)"
+              class="w-full pl-3 pr-8 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 focus:bg-white bg-slate-50 transition"
+              placeholder="Klik atau ketik nama guru / penerima...">
+            <button
+              type="button"
+              onclick="toggleRecipientDropdown(event)"
+              class="absolute right-2 top-2 text-slate-400 hover:text-slate-600">
+              <i data-lucide="chevron-down" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Dropdown Hasil Pencarian Anggota -->
+          <div
+            id="recipientDropdown"
+            class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 max-h-56 overflow-y-auto divide-y divide-slate-100">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nominal Santunan (Rp)</label>
+          <input type="number" id="expenseFormAmount" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold text-red-700" placeholder="500000 / 750000 / 1500000">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Keterangan Tambahan</label>
+          <input type="text" id="expenseFormNotes" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs" placeholder="Detail keterangan (misal: rawat inap di RS)">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('modalExpense')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-medium">Batal</button>
+          <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-semibold">Simpan Pengeluaran</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. Modal Tambah User Pengurus -->
+  <div id="modalUser" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200">
+      <h3 class="font-bold text-base text-slate-900 mb-4">Tambah Akun Pengurus</h3>
+
+      <form id="formUser" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Username</label>
+          <input type="text" id="userFormUsername" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Lengkap</label>
+          <input type="text" id="userFormFullName" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+          <input type="password" id="userFormPassword" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Peran / Jabatan</label>
+          <select id="userFormRole" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs">
+            <option value="pengurus">Pengurus</option>
+            <option value="ketua">Ketua</option>
+            <option value="bendahara">Bendahara</option>
+            <option value="sekretaris">Sekretaris</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('modalUser')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-medium">Batal</button>
+          <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-semibold">Tambah User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Notification Toast Container -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- Main JavaScript App -->
+  <script src="/js/app.js"></script>
+</body>
+</html>
+
