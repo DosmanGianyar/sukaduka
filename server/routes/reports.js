@@ -6,18 +6,8 @@ const { authMiddleware } = require('../auth');
 
 router.use(authMiddleware);
 
-// GET /api/reports/landscape-data?year=2026
-router.get('/landscape-data', (req, res) => {
-  const year = parseInt(req.query.year) || 2026;
-
-  // Settings
-  const settingsRows = db.prepare('SELECT key, value FROM settings').all();
-  const settings = {};
-  for (const s of settingsRows) settings[s.key] = s.value;
-
-  // Members
-  const members = db.prepare("SELECT * FROM members ORDER BY CASE WHEN status = 'PENSIUN' THEN 1 ELSE 0 END ASC, member_no ASC, id ASC").all();
-
+// Helper function to calculate full financial report for a specific year
+function getYearReportData(year, members) {
   // Contributions for this year
   const contribRows = db.prepare('SELECT member_id, month, amount, status, notes FROM contributions WHERE year = ?').all(year);
   const contribMap = {};
@@ -92,12 +82,10 @@ router.get('/landscape-data', (req, res) => {
   `).get(year).total || 0;
   const priorExpense = db.prepare('SELECT SUM(amount) as total FROM expenses WHERE year < ?').get(year).total || 0;
   const saldoAwal = priorIncome - priorExpense;
-
   const saldoAkhir = saldoAwal + totalIncomeYear - totalExpenseYear;
 
-  res.json({
+  return {
     year,
-    settings,
     rows,
     monthlyTotals,
     totalIncomeYear,
@@ -105,22 +93,52 @@ router.get('/landscape-data', (req, res) => {
     totalExpenseYear,
     saldoAwal,
     saldoAkhir
+  };
+}
+
+// GET /api/reports/landscape-data?year=2026 or ?year=ALL
+router.get('/landscape-data', (req, res) => {
+  // Settings
+  const settingsRows = db.prepare('SELECT key, value FROM settings').all();
+  const settings = {};
+  for (const s of settingsRows) settings[s.key] = s.value;
+
+  // Members
+  const members = db.prepare("SELECT * FROM members ORDER BY CASE WHEN status = 'PENSIUN' THEN 1 ELSE 0 END ASC, member_no ASC, id ASC").all();
+
+  const isAll = (req.query.year || '').toUpperCase() === 'ALL';
+
+  if (isAll) {
+    const distinctYears = db.prepare('SELECT DISTINCT year FROM contributions ORDER BY year ASC').all().map(r => r.year);
+    const years = distinctYears.length ? distinctYears : [2022, 2023, 2024, 2025, 2026];
+    const reports = years.map(y => getYearReportData(y, members));
+
+    return res.json({
+      isAllYears: true,
+      years,
+      settings,
+      reports
+    });
+  }
+
+  const year = parseInt(req.query.year) || 2026;
+  const report = getYearReportData(year, members);
+
+  res.json({
+    isAllYears: false,
+    settings,
+    ...report
   });
 });
 
-// GET /api/reports/export-excel?year=2026
-router.get('/export-excel', (req, res) => {
-  const year = parseInt(req.query.year) || 2026;
-
-  const members = db.prepare("SELECT * FROM members ORDER BY CASE WHEN status = 'PENSIUN' THEN 1 ELSE 0 END ASC, member_no ASC, id ASC").all();
+// Helper to append a single year's iuran and expenses to a workbook
+function appendYearSheets(wb, year, members) {
   const contribRows = db.prepare('SELECT member_id, month, amount, status FROM contributions WHERE year = ?').all(year);
   const contribMap = {};
   for (const c of contribRows) {
     if (!contribMap[c.member_id]) contribMap[c.member_id] = {};
     contribMap[c.member_id][c.month] = c;
   }
-
-  const wb = xlsx.utils.book_new();
 
   // Sheet 1: Rekap Iuran
   const wsData = [
@@ -204,6 +222,70 @@ router.get('/export-excel', (req, res) => {
 
   const wsExp = xlsx.utils.aoa_to_sheet(expData);
   xlsx.utils.book_append_sheet(wb, wsExp, `Pengeluaran ${year}`);
+}
+
+// GET /api/reports/export-excel?year=2026 or ?year=ALL
+router.get('/export-excel', (req, res) => {
+  const members = db.prepare("SELECT * FROM members ORDER BY CASE WHEN status = 'PENSIUN' THEN 1 ELSE 0 END ASC, member_no ASC, id ASC").all();
+  const isAll = (req.query.year || '').toUpperCase() === 'ALL';
+  const wb = xlsx.utils.book_new();
+
+  if (isAll) {
+    const distinctYears = db.prepare('SELECT DISTINCT year FROM contributions ORDER BY year ASC').all().map(r => r.year);
+    const years = distinctYears.length ? distinctYears : [2022, 2023, 2024, 2025, 2026];
+
+    // Summary Sheet
+    const summaryData = [
+      ['REKAPITULASI KEUANGAN SUKA DUKA SEMUA TAHUN (' + years[0] + ' - ' + years[years.length - 1] + ')'],
+      [],
+      ['TAHUN', 'SALDO AWAL KAS', 'TOTAL PEMASUKAN IURAN', 'TOTAL PENGELUARAN SANTUNAN', 'SALDO AKHIR KAS', 'JUMLAH KASUS']
+    ];
+
+    let grandIncome = 0;
+    let grandExpense = 0;
+
+    for (const y of years) {
+      const rep = getYearReportData(y, members);
+      grandIncome += rep.totalIncomeYear;
+      grandExpense += rep.totalExpenseYear;
+      summaryData.push([
+        y,
+        rep.saldoAwal,
+        rep.totalIncomeYear,
+        rep.totalExpenseYear,
+        rep.saldoAkhir,
+        rep.expenses.length
+      ]);
+    }
+
+    const lastRep = getYearReportData(years[years.length - 1], members);
+    summaryData.push([]);
+    summaryData.push([
+      'TOTAL KESELURUHAN',
+      '',
+      grandIncome,
+      grandExpense,
+      lastRep.saldoAkhir,
+      ''
+    ]);
+
+    const wsSummary = xlsx.utils.aoa_to_sheet(summaryData);
+    xlsx.utils.book_append_sheet(wb, wsSummary, 'Ringkasan Multi-Tahun');
+
+    // Append sheets for each year
+    for (const y of years) {
+      appendYearSheets(wb, y, members);
+    }
+
+    const buf = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    const filename = `Rekap_SukaDuka_Semua_Tahun_${years[0]}-${years[years.length - 1]}.xlsx`;
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    return res.send(buf);
+  }
+
+  const year = parseInt(req.query.year) || 2026;
+  appendYearSheets(wb, year, members);
 
   const buf = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
   res.setHeader('Content-Disposition', `attachment; filename="Rekap_SukaDuka_${year}.xlsx"`);

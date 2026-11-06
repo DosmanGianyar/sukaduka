@@ -39,254 +39,305 @@
       text-align: right;
       font-variant-numeric: tabular-nums;
     }
+    .year-report-block {
+      page-break-after: always;
+      break-after: page;
+    }
+    .year-report-block:last-child {
+      page-break-after: auto;
+      break-after: auto;
+    }
+    .page-break-inside-avoid {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        padding: 0 !important;
+      }
+    }
   </style>
 </head>
 <body class="p-4">
 
   <!-- Print Action Toolbar (Hidden during print) -->
-  <div class="no-print bg-slate-900 text-white p-3 rounded-xl mb-4 flex justify-between items-center shadow-lg">
-    <div class="flex items-center space-x-3">
-      <span class="font-bold text-lg">📄 Cetak Rekapitulasi Landscape</span>
-      <span id="labelTahun" class="bg-emerald-600 px-3 py-1 rounded-full text-xs font-semibold">Tahun 2026</span>
+  <div class="no-print bg-slate-900 text-white p-3 rounded-xl mb-4 flex flex-wrap justify-between items-center gap-3 shadow-lg">
+    <div class="flex items-center flex-wrap gap-3">
+      <span class="font-bold text-base md:text-lg flex items-center gap-2">
+        <span>📄 Cetak Rekapitulasi Landscape</span>
+      </span>
+      <div class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
+        <label for="printYearSelect" class="text-xs text-slate-300 font-semibold">Pilih Periode:</label>
+        <select id="printYearSelect" onchange="onYearChange(this.value)" class="bg-slate-900 text-white border border-slate-600 text-xs font-semibold rounded px-2.5 py-1 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <option value="ALL">🌟 Cetak Semua Tahun (2022 - 2026)</option>
+          <option value="2026">Tahun 2026</option>
+          <option value="2025">Tahun 2025</option>
+          <option value="2024">Tahun 2024</option>
+          <option value="2023">Tahun 2023</option>
+          <option value="2022">Tahun 2022</option>
+        </select>
+      </div>
+      <span id="labelTahun" class="bg-emerald-600 px-3 py-1 rounded-full text-xs font-semibold hidden md:inline-block">Semua Tahun</span>
     </div>
-    <div class="flex space-x-2">
-      <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5 shadow">
+    <div class="flex items-center space-x-2">
+      <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5 shadow transition">
         🖨️ Cetak Sekarang / Simpan PDF
       </button>
-      <button onclick="window.close()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-sm">
+      <button onclick="window.close()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-sm transition">
         Tutup
       </button>
     </div>
   </div>
 
+  <!-- Print Area Container -->
   <div id="printArea">
-    <!-- Header Kop -->
-    <div class="flex items-center justify-center gap-4 mb-4 pb-2 border-b-2 border-black">
-      <img src="/img/logo-sukaduka.svg" alt="Logo Suka Duka" class="w-14 h-14 object-contain">
-      <div class="text-center">
-        <h1 id="headerSchool" class="text-base font-bold uppercase tracking-wider">PENGURUS SUKA DUKA GURU DAN PEGAWAI</h1>
-        <h2 class="text-sm font-bold uppercase">REKAPITULASI IURAN DAN KAS TAHUN <span id="headerYear">2026</span></h2>
-        <p class="text-xs text-gray-600">Dokumen Rekapitulasi Resmi Pembayaran Iuran &amp; Penyaluran Santunan Suka Duka</p>
-      </div>
-    </div>
-
-    <!-- Tabel Rekap 12 Bulan -->
-    <table class="print-table mb-4">
-      <thead>
-        <tr>
-          <th style="width: 25px;">NO</th>
-          <th style="text-align: left; width: 180px;">NAMA LENGKAP</th>
-          <th style="width: 110px;">NIP</th>
-          <th style="width: 48px;">Jan</th>
-          <th style="width: 48px;">Feb</th>
-          <th style="width: 48px;">Mar</th>
-          <th style="width: 48px;">Apr</th>
-          <th style="width: 48px;">Mei</th>
-          <th style="width: 48px;">Jun</th>
-          <th style="width: 48px;">Jul</th>
-          <th style="width: 48px;">Agu</th>
-          <th style="width: 48px;">Sep</th>
-          <th style="width: 48px;">Okt</th>
-          <th style="width: 48px;">Nov</th>
-          <th style="width: 48px;">Des</th>
-          <th style="width: 75px;">JUMLAH</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody">
-        <tr><td colspan="16" class="text-center py-4">Memuat data...</td></tr>
-      </tbody>
-      <tfoot id="tableFoot" class="font-bold bg-slate-100">
-        <!-- Will be filled by JS -->
-      </tfoot>
-    </table>
-
-    <!-- Ringkasan Saldo & Kotak Kas -->
-    <div class="grid grid-cols-12 gap-4 my-4 page-break-inside-avoid">
-      <div class="col-span-6 border border-black p-2 rounded text-xs bg-slate-50">
-        <div class="font-bold border-b border-black pb-1 mb-1.5 uppercase text-slate-800">
-          Ringkasan Keuangan Suka Duka (Tahun <span class="yearSpan">2026</span>)
-        </div>
-        <table class="w-full text-xs">
-          <tr>
-            <td class="py-0.5">1. Saldo Awal Kas</td>
-            <td class="text-right font-medium" id="txtSaldoAwal">Rp 0</td>
-          </tr>
-          <tr>
-            <td class="py-0.5">2. Total Pemasukan Iuran Tahun Ini</td>
-            <td class="text-right text-emerald-700 font-semibold" id="txtTotalIncome">Rp 0</td>
-          </tr>
-          <tr>
-            <td class="py-0.5">3. Total Pengeluaran Santunan Tahun Ini</td>
-            <td class="text-right text-red-700 font-semibold" id="txtTotalExpense">Rp 0</td>
-          </tr>
-          <tr class="border-t border-black font-bold">
-            <td class="pt-1">4. Sisa Saldo Kas Akhir</td>
-            <td class="text-right pt-1 text-sm text-blue-900" id="txtSaldoAkhir">Rp 0</td>
-          </tr>
-        </table>
-      </div>
-
-      <div class="col-span-6 border border-black p-2 rounded text-xs bg-slate-50">
-        <div class="font-bold border-b border-black pb-1 mb-1.5 uppercase text-slate-800">
-          Statistik Anggota & Santunan
-        </div>
-        <table class="w-full text-xs">
-          <tr>
-            <td class="py-0.5">Total Anggota Tercatat</td>
-            <td class="text-right font-medium" id="txtTotalMembers">0 Orang</td>
-          </tr>
-          <tr>
-            <td class="py-0.5">Jumlah Kasus Santunan Disalurkan</td>
-            <td class="text-right font-medium" id="txtExpenseCases">0 Kasus</td>
-          </tr>
-          <tr>
-            <td class="py-0.5">Rata-rata Iuran Per Bulan</td>
-            <td class="text-right font-medium" id="txtAvgMonthly">Rp 0</td>
-          </tr>
-        </table>
-      </div>
-    </div>
-
-    <!-- Tanda Tangan 3 Pejabat Resmi -->
-    <div class="signature-box grid grid-cols-3 text-center mt-6 text-xs font-semibold">
-      <div>
-        <p class="mb-1 text-gray-700">Mengetahui,</p>
-        <p class="font-bold uppercase" id="signTitleKetua">Ketua Suka Duka</p>
-        <div class="h-16"></div>
-        <p class="font-bold underline text-sm" id="signNameKetua">Nyoman Suwita, S.Pd, M.Pd</p>
-      </div>
-
-      <div>
-        <p class="mb-1 text-transparent">.</p>
-        <p class="font-bold uppercase" id="signTitleSekretaris">Sekretaris</p>
-        <div class="h-16"></div>
-        <p class="font-bold underline text-sm" id="signNameSekretaris">I Putu Darma Putra</p>
-      </div>
-
-      <div>
-        <p class="mb-1 text-gray-700">Denpasar, <span id="currentDateStr"></span></p>
-        <p class="font-bold uppercase" id="signTitleBendahara">Bendahara</p>
-        <div class="h-16"></div>
-        <p class="font-bold underline text-sm" id="signNameBendahara">Wayan Setiawati</p>
-      </div>
+    <div id="loadingIndicator" class="text-center py-12 text-slate-500">
+      <div class="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent text-emerald-600 rounded-full mb-2"></div>
+      <p class="font-medium">Memuat data laporan...</p>
     </div>
   </div>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const year = parseInt(urlParams.get('year')) || 2026;
+    let currentYearParam = (urlParams.get('year') || '2026').trim();
 
-    document.getElementById('headerYear').innerText = year;
-    document.getElementById('labelTahun').innerText = 'Tahun ' + year;
-    document.querySelectorAll('.yearSpan').forEach(el => el.innerText = year);
+    // Set dropdown to match initial URL param
+    const yearSelect = document.getElementById('printYearSelect');
+    if (currentYearParam.toUpperCase() === 'ALL') {
+      yearSelect.value = 'ALL';
+    } else {
+      yearSelect.value = currentYearParam;
+    }
 
     // Tanggal hari ini format Indonesia
     const now = new Date();
     const tglIndo = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-    document.getElementById('currentDateStr').innerText = tglIndo;
 
     function formatRp(val) {
       if (val === undefined || val === null || isNaN(val)) return '0';
       return parseInt(val).toLocaleString('id-ID');
     }
 
-    async function loadData() {
-      try {
-        const token = localStorage.getItem('sukaduka_token');
-        const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
-        const res = await fetch('/api/reports/landscape-data?year=' + year, { headers });
-        if (!res.ok) throw new Error('Gagal memuat data laporan');
-        const data = await res.json();
+    function onYearChange(val) {
+      currentYearParam = val;
+      const newUrl = new URL(window.location);
+      newUrl.searchParams.set('year', val);
+      window.history.replaceState({}, '', newUrl);
+      loadData();
+    }
 
-        // Bind Settings & TTD
-        const s = data.settings || {};
-        if (s.school_name) document.getElementById('headerSchool').innerText = s.school_name;
-        if (s.leader_name) document.getElementById('signNameKetua').innerText = s.leader_name;
-        if (s.leader_title) document.getElementById('signTitleKetua').innerText = s.leader_title;
-        if (s.treasurer_name) document.getElementById('signNameBendahara').innerText = s.treasurer_name;
-        if (s.treasurer_title) document.getElementById('signTitleBendahara').innerText = s.treasurer_title;
-        if (s.secretary_name) document.getElementById('signNameSekretaris').innerText = s.secretary_name;
-        if (s.secretary_title) document.getElementById('signTitleSekretaris').innerText = s.secretary_title;
+    function buildYearHtml(rep, settings, isLast) {
+      const activeRows = rep.rows.filter(r => r.status !== 'PENSIUN');
+      const retiredRows = rep.rows.filter(r => r.status === 'PENSIUN');
 
-        // Bind Rows
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = '';
-
-        const activeRows = data.rows.filter(r => r.status !== 'PENSIUN');
-        const retiredRows = data.rows.filter(r => r.status === 'PENSIUN');
-
-        function createPrintTr(r, isPensiun) {
-          const tr = document.createElement('tr');
-          if (isPensiun) tr.style.backgroundColor = '#fffbeb';
-
-          let mCells = '';
-          for (let m = 1; m <= 12; m++) {
-            const val = r.months[m];
-            if (typeof val === 'number' && val > 0) {
-              mCells += `<td class="text-num text-emerald-700">${formatRp(val)}</td>`;
-            } else if (val === 'PENSIUN') {
-              mCells += `<td class="text-center text-amber-700 font-semibold" style="font-size:7pt">PENSIUN</td>`;
-            } else {
-              mCells += `<td class="text-center text-gray-400">-</td>`;
-            }
+      function buildRowTr(r, isPensiun) {
+        let mCells = '';
+        for (let m = 1; m <= 12; m++) {
+          const val = r.months[m];
+          if (typeof val === 'number' && val > 0) {
+            mCells += `<td class="text-num text-emerald-700">${formatRp(val)}</td>`;
+          } else if (val === 'PENSIUN') {
+            mCells += `<td class="text-center text-amber-700 font-semibold" style="font-size:7pt">PENSIUN</td>`;
+          } else {
+            mCells += `<td class="text-center text-gray-400">-</td>`;
           }
+        }
 
-          tr.innerHTML = `
+        const bgStyle = isPensiun ? 'style="background-color: #fffbeb;"' : '';
+        return `
+          <tr ${bgStyle}>
             <td class="text-center">${r.no}</td>
             <td class="font-medium">${r.name}</td>
             <td class="text-center text-gray-600">${r.nip || '-'}</td>
             ${mCells}
             <td class="text-num font-bold text-slate-900">${formatRp(r.total)}</td>
-          `;
-          return tr;
-        }
+          </tr>
+        `;
+      }
 
-        // Render Active Rows First
-        activeRows.forEach(r => {
-          tbody.appendChild(createPrintTr(r, false));
-        });
+      let rowsHtml = activeRows.map(r => buildRowTr(r, false)).join('');
 
-        // Render Retired Rows at Bottom
-        if (retiredRows.length > 0) {
-          const sepTr = document.createElement('tr');
-          sepTr.innerHTML = `
+      if (retiredRows.length > 0) {
+        rowsHtml += `
+          <tr>
             <td colspan="16" class="text-left font-bold py-1 px-2 uppercase" style="background-color: #fef3c7 !important; border: 1px solid #111; font-size: 7.5pt; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
               DAFTAR ANGGOTA PURNA TUGAS / PENSIUN (${retiredRows.length} ORANG)
             </td>
-          `;
-          tbody.appendChild(sepTr);
-
-          retiredRows.forEach(r => {
-            tbody.appendChild(createPrintTr(r, true));
-          });
-        }
-
-        // Bind Foot Total
-        const tfoot = document.getElementById('tableFoot');
-        let footMonths = '';
-        for (let m = 1; m <= 12; m++) {
-          footMonths += `<td class="text-num">${formatRp(data.monthlyTotals[m])}</td>`;
-        }
-        tfoot.innerHTML = `
-          <tr>
-            <td colspan="3" class="text-center uppercase tracking-wide">TOTAL PENERIMAAN PER BULAN</td>
-            ${footMonths}
-            <td class="text-num text-emerald-800 text-sm font-bold">Rp ${formatRp(data.totalIncomeYear)}</td>
           </tr>
         `;
+        rowsHtml += retiredRows.map(r => buildRowTr(r, true)).join('');
+      }
 
-        // Bind Saldo
-        document.getElementById('txtSaldoAwal').innerText = 'Rp ' + formatRp(data.saldoAwal);
-        document.getElementById('txtTotalIncome').innerText = '+ Rp ' + formatRp(data.totalIncomeYear);
-        document.getElementById('txtTotalExpense').innerText = '- Rp ' + formatRp(data.totalExpenseYear);
-        document.getElementById('txtSaldoAkhir').innerText = 'Rp ' + formatRp(data.saldoAkhir);
+      let footMonths = '';
+      for (let m = 1; m <= 12; m++) {
+        footMonths += `<td class="text-num">${formatRp(rep.monthlyTotals[m])}</td>`;
+      }
 
-        document.getElementById('txtTotalMembers').innerText = data.rows.length + ' Orang';
-        document.getElementById('txtExpenseCases').innerText = (data.expenses ? data.expenses.length : 0) + ' Transaksi';
-        document.getElementById('txtAvgMonthly').innerText = 'Rp ' + formatRp(Math.round(data.totalIncomeYear / 12));
+      const schoolName = settings.school_name || 'PENGURUS SUKA DUKA GURU DAN PEGAWAI';
+      const leaderTitle = settings.leader_title || 'Ketua Suka Duka';
+      const leaderName = settings.leader_name || 'Nyoman Suwita, S.Pd, M.Pd';
+      const secTitle = settings.secretary_title || 'Sekretaris';
+      const secName = settings.secretary_name || 'I Putu Darma Putra';
+      const tresTitle = settings.treasurer_title || 'Bendahara';
+      const tresName = settings.treasurer_name || 'Wayan Setiawati';
 
+      return `
+        <div class="year-report-block mb-8">
+          <!-- Kop Surat -->
+          <div class="flex items-center justify-center gap-4 mb-4 pb-2 border-b-2 border-black">
+            <img src="/img/logo-sukaduka.svg" alt="Logo Suka Duka" class="w-14 h-14 object-contain">
+            <div class="text-center">
+              <h1 class="text-base font-bold uppercase tracking-wider">${schoolName}</h1>
+              <h2 class="text-sm font-bold uppercase">REKAPITULASI IURAN DAN KAS TAHUN ${rep.year}</h2>
+              <p class="text-xs text-gray-600">Dokumen Rekapitulasi Resmi Pembayaran Iuran &amp; Penyaluran Santunan Suka Duka</p>
+            </div>
+          </div>
+
+          <!-- Tabel Rekap 12 Bulan -->
+          <table class="print-table mb-4">
+            <thead>
+              <tr>
+                <th style="width: 25px;">NO</th>
+                <th style="text-align: left; width: 180px;">NAMA LENGKAP</th>
+                <th style="width: 110px;">NIP</th>
+                <th style="width: 48px;">Jan</th>
+                <th style="width: 48px;">Feb</th>
+                <th style="width: 48px;">Mar</th>
+                <th style="width: 48px;">Apr</th>
+                <th style="width: 48px;">Mei</th>
+                <th style="width: 48px;">Jun</th>
+                <th style="width: 48px;">Jul</th>
+                <th style="width: 48px;">Agu</th>
+                <th style="width: 48px;">Sep</th>
+                <th style="width: 48px;">Okt</th>
+                <th style="width: 48px;">Nov</th>
+                <th style="width: 48px;">Des</th>
+                <th style="width: 75px;">JUMLAH</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+            <tfoot class="font-bold bg-slate-100">
+              <tr>
+                <td colspan="3" class="text-center uppercase tracking-wide">TOTAL PENERIMAAN PER BULAN</td>
+                ${footMonths}
+                <td class="text-num text-emerald-800 text-sm font-bold">Rp ${formatRp(rep.totalIncomeYear)}</td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <!-- Ringkasan Saldo & Kotak Kas -->
+          <div class="grid grid-cols-12 gap-4 my-4 page-break-inside-avoid">
+            <div class="col-span-6 border border-black p-2 rounded text-xs bg-slate-50">
+              <div class="font-bold border-b border-black pb-1 mb-1.5 uppercase text-slate-800">
+                Ringkasan Keuangan Suka Duka (Tahun ${rep.year})
+              </div>
+              <table class="w-full text-xs">
+                <tr>
+                  <td class="py-0.5">1. Saldo Awal Kas</td>
+                  <td class="text-right font-medium">Rp ${formatRp(rep.saldoAwal)}</td>
+                </tr>
+                <tr>
+                  <td class="py-0.5">2. Total Pemasukan Iuran Tahun Ini</td>
+                  <td class="text-right text-emerald-700 font-semibold">+ Rp ${formatRp(rep.totalIncomeYear)}</td>
+                </tr>
+                <tr>
+                  <td class="py-0.5">3. Total Pengeluaran Santunan Tahun Ini</td>
+                  <td class="text-right text-red-700 font-semibold">- Rp ${formatRp(rep.totalExpenseYear)}</td>
+                </tr>
+                <tr class="border-t border-black font-bold">
+                  <td class="pt-1">4. Sisa Saldo Kas Akhir</td>
+                  <td class="text-right pt-1 text-sm text-blue-900">Rp ${formatRp(rep.saldoAkhir)}</td>
+                </tr>
+              </table>
+            </div>
+
+            <div class="col-span-6 border border-black p-2 rounded text-xs bg-slate-50">
+              <div class="font-bold border-b border-black pb-1 mb-1.5 uppercase text-slate-800">
+                Statistik Anggota &amp; Santunan
+              </div>
+              <table class="w-full text-xs">
+                <tr>
+                  <td class="py-0.5">Total Anggota Tercatat</td>
+                  <td class="text-right font-medium">${rep.rows.length} Orang</td>
+                </tr>
+                <tr>
+                  <td class="py-0.5">Jumlah Kasus Santunan Disalurkan</td>
+                  <td class="text-right font-medium">${rep.expenses ? rep.expenses.length : 0} Transaksi</td>
+                </tr>
+                <tr>
+                  <td class="py-0.5">Rata-rata Iuran Per Bulan</td>
+                  <td class="text-right font-medium">Rp ${formatRp(Math.round(rep.totalIncomeYear / 12))}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tanda Tangan 3 Pejabat Resmi -->
+          <div class="signature-box grid grid-cols-3 text-center mt-6 text-xs font-semibold page-break-inside-avoid">
+            <div>
+              <p class="mb-1 text-gray-700">Mengetahui,</p>
+              <p class="font-bold uppercase">${leaderTitle}</p>
+              <div class="h-16"></div>
+              <p class="font-bold underline text-sm">${leaderName}</p>
+            </div>
+
+            <div>
+              <p class="mb-1 text-transparent">.</p>
+              <p class="font-bold uppercase">${secTitle}</p>
+              <div class="h-16"></div>
+              <p class="font-bold underline text-sm">${secName}</p>
+            </div>
+
+            <div>
+              <p class="mb-1 text-gray-700">Denpasar, ${tglIndo}</p>
+              <p class="font-bold uppercase">${tresTitle}</p>
+              <div class="h-16"></div>
+              <p class="font-bold underline text-sm">${tresName}</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function loadData() {
+      const printArea = document.getElementById('printArea');
+      printArea.innerHTML = `
+        <div class="text-center py-12 text-slate-500">
+          <div class="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent text-emerald-600 rounded-full mb-2"></div>
+          <p class="font-medium">Memuat data laporan...</p>
+        </div>
+      `;
+
+      try {
+        const token = localStorage.getItem('sukaduka_token');
+        const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+        const res = await fetch('/api/reports/landscape-data?year=' + currentYearParam, { headers });
+        if (!res.ok) throw new Error('Gagal memuat data laporan');
+        const data = await res.json();
+
+        const labelTahun = document.getElementById('labelTahun');
+        if (data.isAllYears) {
+          labelTahun.innerText = 'Semua Tahun (' + data.years[0] + ' - ' + data.years[data.years.length - 1] + ')';
+          document.title = 'Cetak Rekap Suka Duka Seluruh Tahun (' + data.years[0] + '-' + data.years[data.years.length - 1] + ')';
+          
+          let fullHtml = '';
+          data.reports.forEach((rep, idx) => {
+            const isLast = idx === data.reports.length - 1;
+            fullHtml += buildYearHtml(rep, data.settings || {}, isLast);
+          });
+          printArea.innerHTML = fullHtml;
+        } else {
+          labelTahun.innerText = 'Tahun ' + data.year;
+          document.title = 'Cetak Rekap Suka Duka Tahun ' + data.year;
+          printArea.innerHTML = buildYearHtml(data, data.settings || {}, true);
+        }
       } catch (err) {
-        alert(err.message);
+        printArea.innerHTML = `<div class="p-6 text-red-600 bg-red-50 border border-red-200 rounded-xl text-center font-semibold">${err.message}</div>`;
       }
     }
 
@@ -294,4 +345,3 @@
   </script>
 </body>
 </html>
-

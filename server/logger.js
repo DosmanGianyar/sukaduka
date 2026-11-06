@@ -72,3 +72,4 @@ function logActivity(req, { module, action_type, target_name, period, amount = 0
 module.exports = {
   logActivity
 };
+

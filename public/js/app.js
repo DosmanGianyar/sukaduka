@@ -206,6 +206,7 @@ async function loadGrid(selectedYear) {
   try {
     const year = selectedYear || document.getElementById('gridYearSelect').value;
     const status = document.getElementById('gridStatusSelect').value;
+    document.querySelectorAll('.currentGridYearText').forEach(el => el.innerText = year);
     const data = await apiFetch(`/api/contributions/grid?year=${year}&status=${status}`);
     currentGridData = data;
 
@@ -788,6 +789,91 @@ async function loadReportPreview(selectedYear) {
     const year = selectedYear || document.getElementById('reportYearSelect').value || 2026;
     const data = await apiFetch('/api/reports/landscape-data?year=' + year);
 
+    if (data.isAllYears) {
+      document.getElementById('prevYear').innerText = 'SELURUH TAHUN (' + data.years[0] + ' - ' + data.years[data.years.length - 1] + ')';
+      const now = new Date();
+      document.getElementById('prevDateToday').innerText = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+      // Settings
+      const s = data.settings || {};
+      if (s.school_name) {
+        document.getElementById('prevSchool').innerText = s.school_name;
+        document.getElementById('appSchoolSubtitle').innerText = s.school_name;
+      }
+      if (s.leader_name) document.getElementById('prevNameKetua').innerText = s.leader_name;
+      if (s.leader_title) document.getElementById('prevTitleKetua').innerText = s.leader_title;
+      if (s.treasurer_name) document.getElementById('prevNameBendahara').innerText = s.treasurer_name;
+      if (s.treasurer_title) document.getElementById('prevTitleBendahara').innerText = s.treasurer_title;
+      if (s.secretary_name) document.getElementById('prevNameSekretaris').innerText = s.secretary_name;
+      if (s.secretary_title) document.getElementById('prevTitleSekretaris').innerText = s.secretary_title;
+
+      let grandIncome = 0;
+      let grandExpense = 0;
+      let summaryRows = '';
+
+      data.reports.forEach(r => {
+        grandIncome += r.totalIncomeYear;
+        grandExpense += r.totalExpenseYear;
+        summaryRows += `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-2.5 font-bold text-center border border-slate-300 text-slate-800">${r.year}</td>
+            <td class="p-2.5 text-right border border-slate-300">${formatRp(r.saldoAwal)}</td>
+            <td class="p-2.5 text-right border border-slate-300 text-emerald-700 font-semibold">+ ${formatRp(r.totalIncomeYear)}</td>
+            <td class="p-2.5 text-right border border-slate-300 text-red-700 font-semibold">- ${formatRp(r.totalExpenseYear)}</td>
+            <td class="p-2.5 text-right border border-slate-300 font-bold text-slate-900">${formatRp(r.saldoAkhir)}</td>
+            <td class="p-2.5 text-center border border-slate-300">${r.expenses ? r.expenses.length : 0} Kasus</td>
+          </tr>
+        `;
+      });
+
+      const lastRep = data.reports[data.reports.length - 1];
+      const container = document.getElementById('prevTableContainer');
+      container.innerHTML = `
+        <div class="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex flex-col md:flex-row items-center justify-between gap-3">
+          <div>
+            <h4 class="font-bold text-emerald-900 text-sm">Mode Pratinjau Rekapitulasi Seluruh Tahun (${data.years[0]} - ${data.years[data.years.length - 1]})</h4>
+            <p class="text-xs text-emerald-700">Semua halaman siap dicetak otomatis dalam format landscape dengan pemisahan halaman resmi (page-break) per tahun.</p>
+          </div>
+          <button onclick="openPrintLandscape('ALL')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow flex items-center gap-1.5 transition">
+            <i data-lucide="printer" class="w-4 h-4"></i> Cetak Seluruh Tahun Sekarang
+          </button>
+        </div>
+        <table class="w-full text-xs border-collapse border border-slate-300">
+          <thead class="bg-slate-100 font-bold text-slate-800">
+            <tr>
+              <th class="border border-slate-300 p-2 text-center">TAHUN</th>
+              <th class="border border-slate-300 p-2 text-right">SALDO AWAL</th>
+              <th class="border border-slate-300 p-2 text-right">PEMASUKAN IURAN</th>
+              <th class="border border-slate-300 p-2 text-right">PENGELUARAN SANTUNAN</th>
+              <th class="border border-slate-300 p-2 text-right">SALDO AKHIR</th>
+              <th class="border border-slate-300 p-2 text-center">SANTUNAN</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${summaryRows}
+          </tbody>
+          <tfoot class="bg-slate-100 font-bold border-t-2 border-slate-400">
+            <tr>
+              <td class="p-2 text-center">TOTAL KESELURUHAN</td>
+              <td class="p-2 text-right">-</td>
+              <td class="p-2 text-right text-emerald-800">Rp ${formatRp(grandIncome)}</td>
+              <td class="p-2 text-right text-red-800">Rp ${formatRp(grandExpense)}</td>
+              <td class="p-2 text-right text-blue-900">Rp ${formatRp(lastRep.saldoAkhir)}</td>
+              <td class="p-2 text-center">-</td>
+            </tr>
+          </tfoot>
+        </table>
+      `;
+
+      // Saldo box
+      document.getElementById('prevSaldoAwal').innerText = 'Rp ' + formatRp(data.reports[0].saldoAwal);
+      document.getElementById('prevTotalIncome').innerText = '+ Rp ' + formatRp(grandIncome);
+      document.getElementById('prevTotalExpense').innerText = '- Rp ' + formatRp(grandExpense);
+      document.getElementById('prevSaldoAkhir').innerText = 'Rp ' + formatRp(lastRep.saldoAkhir);
+      if (window.lucide) lucide.createIcons();
+      return;
+    }
+
     document.getElementById('prevYear').innerText = year;
     const now = new Date();
     document.getElementById('prevDateToday').innerText = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -903,15 +989,49 @@ async function loadReportPreview(selectedYear) {
   }
 }
 
-function openPrintLandscape() {
-  const year = document.getElementById('reportYearSelect')?.value || document.getElementById('gridYearSelect')?.value || 2026;
+function openPrintLandscape(paramYear) {
+  let year = paramYear;
+  if (!year) {
+    year = document.getElementById('reportYearSelect')?.value || document.getElementById('gridYearSelect')?.value || 2026;
+  }
   window.open(`/print.html?year=${year}`, '_blank');
 }
 
-function exportExcel() {
-  const year = document.getElementById('reportYearSelect')?.value || document.getElementById('gridYearSelect')?.value || 2026;
+function exportExcel(paramYear) {
+  let year = paramYear;
+  if (!year) {
+    year = document.getElementById('reportYearSelect')?.value || document.getElementById('gridYearSelect')?.value || 2026;
+  }
   window.location.href = `/api/reports/export-excel?year=${year}`;
 }
+
+// Dropdown Menus for Export & Print
+function toggleExcelDropdown(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('dropdownExcelMenu');
+  const printMenu = document.getElementById('dropdownPrintMenu');
+  if (printMenu) printMenu.classList.add('hidden');
+  if (menu) menu.classList.toggle('hidden');
+}
+
+function togglePrintDropdown(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('dropdownPrintMenu');
+  const excelMenu = document.getElementById('dropdownExcelMenu');
+  if (excelMenu) excelMenu.classList.add('hidden');
+  if (menu) menu.classList.toggle('hidden');
+}
+
+function hideExportDropdowns() {
+  document.getElementById('dropdownExcelMenu')?.classList.add('hidden');
+  document.getElementById('dropdownPrintMenu')?.classList.add('hidden');
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#dropdownExcelWrapper') && !e.target.closest('#dropdownPrintWrapper')) {
+    hideExportDropdowns();
+  }
+});
 
 // ================= 6. SETTINGS & USERS =================
 
