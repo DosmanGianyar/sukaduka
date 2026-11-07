@@ -795,12 +795,8 @@
                 <div class="flex justify-between text-emerald-700"><span>(+) Penerimaan Pelunasan Tunggakan Hari Ini (34 Guru)</span><span class="font-bold">+ Rp 10.350.000</span></div>
                 <div class="flex justify-between text-red-600"><span>(-) Pengeluaran Santunan Suka Duka Hari Ini (21 Kasus 2026)</span><span class="font-bold">- Rp 17.250.000</span></div>
                 <div class="border-t border-slate-300 pt-1 flex justify-between font-bold text-blue-900 text-sm">
-                  <span>Sisa Saldo Kas Terkini (Basis Excel C140):</span>
-                  <span>Rp 25.525.000</span>
-                </div>
-                <div class="text-[10px] text-slate-500 pt-0.5 flex justify-between">
-                  <span>*Jika dihitung dari basis akumulasi riil database (Rp 32.875.000):</span>
-                  <span class="font-semibold text-slate-700" id="recBalanceDB">Rp 25.975.000</span>
+                  <span>Sisa Saldo Kas Terkini:</span>
+                  <span id="recSummaryTotal">Rp 25.525.000</span>
                 </div>
               </div>
             </div>
@@ -874,38 +870,34 @@
           <div class="mb-4">
             <h4 class="font-bold text-slate-900 text-sm flex items-center gap-2">
               <i data-lucide="archive" class="w-4 h-4 text-slate-500"></i>
-              Data Lama Bawaan Arsip Excel (s.d. 31 Desember 2025)
+              Data Awal Resmi Bawaan Arsip Excel (s.d. 31 Desember 2025)
             </h4>
-            <p class="text-xs text-slate-500">Komparasi angka tercatat di buku resmi Excel print 3 02 2026.xlsx vs kalkulasi database awal</p>
+            <p class="text-xs text-slate-500">Angka pembukuan resmi dari file Excel master (Sheet Pengeluaran C138 - C140)</p>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-xs border border-slate-200 text-left">
               <thead class="bg-slate-50 font-bold text-slate-700">
                 <tr>
-                  <th class="p-2.5 border border-slate-200">Keterangan Komponen</th>
-                  <th class="p-2.5 border border-slate-200 text-right">Tercatat di Excel (C138-C140)</th>
-                  <th class="p-2.5 border border-slate-200 text-right">Perhitungan Riil Database Awal</th>
-                  <th class="p-2.5 border border-slate-200">Catatan Selisih</th>
+                  <th class="p-2.5 border border-slate-200">Komponen Keuangan</th>
+                  <th class="p-2.5 border border-slate-200 text-right">Nominal Resmi (Excel)</th>
+                  <th class="p-2.5 border border-slate-200">Keterangan Sumber Dokumen</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
                 <tr>
-                  <td class="p-2.5 font-medium border border-slate-200">Total Pemasukan Iuran (2022 - 2025)</td>
+                  <td class="p-2.5 font-medium border border-slate-200">1. Total Pemasukan Iuran Awal (2022 - 2025)</td>
                   <td class="p-2.5 text-right font-bold text-emerald-700 border border-slate-200">Rp 126.175.000</td>
-                  <td class="p-2.5 text-right font-bold text-emerald-700 border border-slate-200">Rp 126.625.000</td>
-                  <td class="p-2.5 text-slate-500 border border-slate-200">Formula SUM Excel melewatkan iuran 8 pensiunan lama &amp; 7 guru baru angkatan 2025</td>
+                  <td class="p-2.5 text-slate-500 border border-slate-200">Sheet Pengeluaran sel C138 (=SUM(Pendapatan!D120:AR120))</td>
                 </tr>
                 <tr>
-                  <td class="p-2.5 font-medium border border-slate-200">Total Pengeluaran Santunan (110 Kasus)</td>
+                  <td class="p-2.5 font-medium border border-slate-200">2. Total Pengeluaran Santunan Awal (110 Kasus)</td>
                   <td class="p-2.5 text-right font-bold text-red-600 border border-slate-200">Rp 93.750.000</td>
-                  <td class="p-2.5 text-right font-bold text-red-600 border border-slate-200">Rp 93.750.000</td>
-                  <td class="p-2.5 text-emerald-600 font-semibold border border-slate-200">100% Cocok Sempurna (110 kasus santunan 2022-2023)</td>
+                  <td class="p-2.5 text-slate-500 border border-slate-200">Sheet Pengeluaran sel C139 (Santunan 2022 - 2023)</td>
                 </tr>
-                <tr class="bg-slate-50/70 font-bold">
-                  <td class="p-2.5 border border-slate-200 text-slate-900">Sisa Saldo Kas Modal Awal 2026</td>
+                <tr class="bg-blue-50/60 font-bold">
+                  <td class="p-2.5 border border-slate-200 text-blue-950">3. Saldo Awal Modal Kas (s.d. 31 Des 2025)</td>
                   <td class="p-2.5 text-right text-blue-900 border border-slate-200 text-sm">Rp 32.425.000</td>
-                  <td class="p-2.5 text-right text-slate-800 border border-slate-200 text-sm">Rp 32.875.000</td>
-                  <td class="p-2.5 text-blue-900 border border-slate-200 font-normal">Sistem mengunci baseline resmi ke angka Excel: <strong>Rp 32.425.000</strong></td>
+                  <td class="p-2.5 text-blue-900 border border-slate-200 font-semibold">Terkunci tepat sesuai Saldo Kas Resmi Excel C140</td>
                 </tr>
               </tbody>
             </table>

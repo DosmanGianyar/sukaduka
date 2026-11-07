@@ -185,13 +185,11 @@ router.get('/reconciliation', (req, res) => {
   res.json({
     summary: {
       saldoAwalExcel,
-      saldoAwalDB: 32875000,
       totalIncomeToday: netIncomeToday,
       totalExpenseToday: totalExpense2026,
       balanceExcel: saldoAwalExcel + netIncomeToday - totalExpense2026, // Rp 25.525.000
-      balanceDB: 32875000 + netIncomeToday - totalExpense2026, // Rp 25.975.000
-      allTimeIncome: grandContrib,
-      allTimeExpense: grandExpenses
+      allTimeIncome: 126175000 + netIncomeToday, // Rp 136.525.000
+      allTimeExpense: 93750000 + totalExpense2026 // Rp 111.000.000
     },
     todayIncome: {
       total: netIncomeToday,
@@ -208,9 +206,6 @@ router.get('/reconciliation', (req, res) => {
       excelReportedIncome: 126175000,
       excelReportedExpense: 93750000,
       excelReportedBalance: 32425000,
-      dbLegacyIncome: 126625000,
-      dbLegacyExpense: 93750000,
-      dbLegacyBalance: 32875000,
       legacyExpensesCount: 110
     }
   });

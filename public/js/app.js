@@ -1390,8 +1390,8 @@ async function loadReconciliation() {
     document.getElementById('recIncomeToday').innerText = '+ Rp ' + formatRp(s.totalIncomeToday);
     document.getElementById('recExpenseToday').innerText = '- Rp ' + formatRp(s.totalExpenseToday);
     document.getElementById('recBalanceFinal').innerText = 'Rp ' + formatRp(s.balanceExcel);
-    const elRecDB = document.getElementById('recBalanceDB');
-    if (elRecDB) elRecDB.innerText = 'Rp ' + formatRp(s.balanceDB);
+    const elRecTotal = document.getElementById('recSummaryTotal');
+    if (elRecTotal) elRecTotal.innerText = 'Rp ' + formatRp(s.balanceExcel);
 
     // 2. Render Tabel Penerimaan Baru Hari Ini
     const tbodyIncome = document.getElementById('recIncomeTableBody');
