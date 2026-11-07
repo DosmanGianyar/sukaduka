@@ -126,7 +126,7 @@ function initApp() {
 
 function switchTab(tab) {
   currentTab = tab;
-  const tabs = ['dashboard', 'contributions', 'expenses', 'members', 'reports', 'logs', 'settings'];
+  const tabs = ['dashboard', 'contributions', 'expenses', 'members', 'reports', 'logs', 'reconciliation', 'settings'];
 
   tabs.forEach(t => {
     const btn = document.getElementById(`nav-${t}`);
@@ -150,6 +150,7 @@ function switchTab(tab) {
   if (tab === 'members') loadMembers();
   if (tab === 'reports') loadReportPreview();
   if (tab === 'logs') loadLogs(1);
+  if (tab === 'reconciliation') loadReconciliation();
   if (tab === 'settings') loadSettings();
 }
 
@@ -1374,6 +1375,79 @@ async function loadLogs(page = 1) {
       </tr>
     `;
     lucide.createIcons();
+  }
+}
+
+// ================= 8. RECONCILIATION / RINCIAN KAS =================
+
+async function loadReconciliation() {
+  try {
+    const data = await apiFetch('/api/summary/reconciliation');
+    const s = data.summary;
+
+    // 1. Bind Summary Cards
+    document.getElementById('recSaldoAwal').innerText = 'Rp ' + formatRp(s.saldoAwalExcel);
+    document.getElementById('recIncomeToday').innerText = '+ Rp ' + formatRp(s.totalIncomeToday);
+    document.getElementById('recExpenseToday').innerText = '- Rp ' + formatRp(s.totalExpenseToday);
+    document.getElementById('recBalanceFinal').innerText = 'Rp ' + formatRp(s.balanceExcel);
+    const elRecDB = document.getElementById('recBalanceDB');
+    if (elRecDB) elRecDB.innerText = 'Rp ' + formatRp(s.balanceDB);
+
+    // 2. Render Tabel Penerimaan Baru Hari Ini
+    const tbodyIncome = document.getElementById('recIncomeTableBody');
+    tbodyIncome.innerHTML = '';
+    data.todayIncome.members.forEach((m, idx) => {
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
+      const periodsText = m.items.map(it => `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 mr-1 mb-1">${it.period}</span>`).join('');
+      tr.innerHTML = `
+        <td class="p-2.5 text-center text-slate-500 font-medium">${idx + 1}</td>
+        <td class="p-2.5 font-semibold text-slate-800">
+          <div>${m.name}</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">${m.items.length} bulan dilunasi</div>
+        </td>
+        <td class="p-2.5">
+          <div class="flex flex-wrap">${periodsText}</div>
+        </td>
+        <td class="p-2.5 text-right font-bold text-emerald-700 whitespace-nowrap">
+          + Rp ${formatRp(m.total)}
+        </td>
+      `;
+      tbodyIncome.appendChild(tr);
+    });
+    document.getElementById('recIncomeCount').innerText = `${data.todayIncome.countMembers} Orang Pelunasan Tunggakan`;
+    document.getElementById('recIncomeSum').innerText = '+ Rp ' + formatRp(data.todayIncome.total);
+
+    // 3. Render Tabel Pengeluaran Baru Hari Ini (Tahun 2026)
+    const tbodyExp = document.getElementById('recExpenseTableBody');
+    tbodyExp.innerHTML = '';
+    data.todayExpenses.items.forEach((e, idx) => {
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
+      tr.innerHTML = `
+        <td class="p-2.5 text-center text-slate-500 font-medium">${idx + 1}</td>
+        <td class="p-2.5 font-medium text-slate-600 whitespace-nowrap text-xs">${e.date}</td>
+        <td class="p-2.5 font-semibold text-slate-800">
+          <div>${e.recipient_name}</div>
+          <div class="text-[10px] text-slate-400">${e.notes || '-'}</div>
+        </td>
+        <td class="p-2.5 text-center">
+          <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+            ${e.category}
+          </span>
+        </td>
+        <td class="p-2.5 text-right font-bold text-red-600 whitespace-nowrap">
+          - Rp ${formatRp(e.amount)}
+        </td>
+      `;
+      tbodyExp.appendChild(tr);
+    });
+    document.getElementById('recExpenseCount').innerText = `${data.todayExpenses.count} Kasus Santunan 2026`;
+    document.getElementById('recExpenseSum').innerText = '- Rp ' + formatRp(data.todayExpenses.total);
+
+    lucide.createIcons();
+  } catch (err) {
+    showToast(err.message, 'error');
   }
 }
 
