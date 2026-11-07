@@ -90,11 +90,58 @@ body {
   border: 1px solid #fde68a;
 }
 
+.badge-bebas {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  padding: 1.5px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-block;
+  margin-left: 6px;
+}
+
+.badge-officer {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-left: 6px;
+  letter-spacing: 0.025em;
+}
+
+.badge-officer-ketua {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.badge-officer-bendahara {
+  background-color: #fef9c3;
+  color: #854d0e;
+  border: 1px solid #fef08a;
+}
+
+.badge-officer-sekretaris {
+  background-color: #ffedd5;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
+}
+
 /* Print Landscape Optimization */
 @media print {
   @page {
     size: landscape;
     margin: 8mm 8mm 8mm 8mm;
+  }
+
+  /* Jangan cetak badge bebas maupun badge pengurus */
+  .badge-bebas,
+  .badge-officer {
+    display: none !important;
   }
 
   body {

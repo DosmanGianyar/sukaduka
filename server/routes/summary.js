@@ -9,21 +9,11 @@ router.use(authMiddleware);
 router.get('/', (req, res) => {
   const currentYear = parseInt(req.query.year) || new Date().getFullYear();
 
-  // Grand totals across all years (mengecualikan pengurus bebas kas)
-  const grandContrib = db.prepare(`
-    SELECT SUM(c.amount) as total
-    FROM contributions c
-    JOIN members m ON c.member_id = m.id
-    WHERE c.status = 'LUNAS'
-      AND (m.officer_role IS NULL OR m.officer_role NOT IN ('KETUA', 'BENDAHARA', 'SEKRETARIS'))
-  `).get();
-  const grandExpenses = db.prepare('SELECT SUM(amount) as total FROM expenses').get();
+  // Saldo Awal Resmi Bawaan Excel (s.d. 31 Des 2025)
+  const settingInitial = db.prepare('SELECT value FROM settings WHERE key = ?').get('initial_balance_2026');
+  const saldoAwalExcel = settingInitial ? parseFloat(settingInitial.value) || 32425000 : 32425000;
 
-  const totalIncomeAll = grandContrib.total || 0;
-  const totalExpenseAll = grandExpenses.total || 0;
-  const currentBalance = totalIncomeAll - totalExpenseAll;
-
-  // Selected year stats (mengecualikan pengurus bebas kas)
+  // Transaksi Tahun Berjalan (misal 2026 - mengecualikan pengurus bebas kas)
   const yearContrib = db.prepare(`
     SELECT SUM(c.amount) as total
     FROM contributions c
@@ -35,6 +25,9 @@ router.get('/', (req, res) => {
 
   const totalIncomeYear = yearContrib.total || 0;
   const totalExpenseYear = yearExpenses.total || 0;
+
+  // Total Kas Terkini: Saldo Awal Excel (Rp 32.425.000) + Pemasukan Tahun Ini - Pengeluaran Tahun Ini
+  const currentBalance = saldoAwalExcel + totalIncomeYear - totalExpenseYear;
 
   // Active member stats
   const memberStats = db.prepare(`
@@ -78,8 +71,9 @@ router.get('/', (req, res) => {
   res.json({
     currentYear,
     grandTotals: {
-      totalIncome: totalIncomeAll,
-      totalExpense: totalExpenseAll,
+      initialBalance: saldoAwalExcel,
+      totalIncome: totalIncomeYear,
+      totalExpense: totalExpenseYear,
       balance: currentBalance
     },
     yearTotals: {

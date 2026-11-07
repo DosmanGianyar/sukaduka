@@ -141,57 +141,73 @@
       <!-- ================= 1. TAB DASHBOARD ================= -->
       <section id="tab-dashboard-content" class="space-y-6">
         <!-- Top Cash Balance Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Saldo Akhir -->
-          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <!-- Saldo Akhir Tersedia -->
+          <div class="bg-white p-5 rounded-2xl border border-blue-200 shadow-sm relative overflow-hidden bg-gradient-to-br from-white to-blue-50/40">
             <div class="flex justify-between items-start">
               <div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Saldo Kas Tersedia</p>
-                <h3 id="dashSaldo" class="text-2xl font-extrabold text-blue-900 mt-1">Rp 0</h3>
+                <p class="text-xs font-semibold uppercase tracking-wider text-blue-700">Saldo Kas Tersedia</p>
+                <h3 id="dashSaldo" class="text-2xl font-black text-blue-950 mt-1">Rp 0</h3>
               </div>
-              <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
-                <i data-lucide="landmark" class="w-6 h-6"></i>
+              <div class="p-3 bg-blue-600 text-white rounded-xl shadow-md shadow-blue-500/20">
+                <i data-lucide="landmark" class="w-5 h-5"></i>
               </div>
             </div>
-            <div class="mt-3 flex items-center text-xs text-slate-500">
-              <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></span>
+            <div class="mt-3 flex items-center text-xs text-blue-800 font-medium">
+              <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
               Kas bersih siap disalurkan
             </div>
           </div>
 
-          <!-- Total Pemasukan -->
+          <!-- Saldo Awal Bawaan Excel -->
           <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
             <div class="flex justify-between items-start">
               <div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Pemasukan Iuran</p>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Saldo Awal (Excel)</p>
+                <h3 id="dashSaldoAwal" class="text-2xl font-extrabold text-slate-800 mt-1">Rp 32.425.000</h3>
+              </div>
+              <div class="p-3 bg-slate-100 text-slate-600 rounded-xl">
+                <i data-lucide="archive" class="w-5 h-5"></i>
+              </div>
+            </div>
+            <div class="mt-3 flex items-center text-xs text-slate-500">
+              Arsip s.d. 31 Des 2025
+            </div>
+          </div>
+
+          <!-- Total Pemasukan Tahun Ini -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Pemasukan Tahun <span class="currentYearText">2026</span></p>
                 <h3 id="dashPemasukan" class="text-2xl font-extrabold text-emerald-700 mt-1">Rp 0</h3>
               </div>
               <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
-                <i data-lucide="arrow-down-left" class="w-6 h-6"></i>
+                <i data-lucide="arrow-down-left" class="w-5 h-5"></i>
               </div>
             </div>
             <div class="mt-3 flex items-center text-xs text-slate-500">
-              Akumulasi iuran guru & pegawai
+              Input iuran baru tahun ini
             </div>
           </div>
 
-          <!-- Total Pengeluaran -->
+          <!-- Total Pengeluaran Tahun Ini -->
           <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
             <div class="flex justify-between items-start">
               <div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Pengeluaran Santunan</p>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Pengeluaran Tahun <span class="currentYearText">2026</span></p>
                 <h3 id="dashPengeluaran" class="text-2xl font-extrabold text-red-600 mt-1">Rp 0</h3>
               </div>
               <div class="p-3 bg-red-50 text-red-600 rounded-xl">
-                <i data-lucide="arrow-up-right" class="w-6 h-6"></i>
+                <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
               </div>
             </div>
             <div class="mt-3 flex items-center text-xs text-slate-500">
-              Santunan sakit, duka, nikah, dll.
+              Santunan disalurkan tahun ini
             </div>
           </div>
 
-          <!-- Anggota Aktif -->
+          <!-- Anggota Aktif & Pensiun -->
           <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
             <div class="flex justify-between items-start">
               <div>
@@ -199,12 +215,30 @@
                 <h3 id="dashAnggota" class="text-2xl font-extrabold text-purple-900 mt-1">0 Orang</h3>
               </div>
               <div class="p-3 bg-purple-50 text-purple-600 rounded-xl">
-                <i data-lucide="users" class="w-6 h-6"></i>
+                <i data-lucide="users" class="w-5 h-5"></i>
               </div>
             </div>
             <div class="mt-3 flex items-center text-xs text-slate-500">
               <span id="dashAnggotaAktif" class="text-emerald-700 font-semibold mr-1">0 Aktif</span>
               • <span id="dashAnggotaPensiun" class="ml-1 text-amber-700">0 Pensiun</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Banner Pembedaan Data Awal vs Transaksi Baru -->
+        <div class="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-4 flex items-start gap-3.5 text-xs text-blue-900 shadow-sm">
+          <div class="p-2 bg-blue-600 text-white rounded-xl shrink-0 mt-0.5 shadow-sm">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+          </div>
+          <div class="flex-1">
+            <span class="font-bold block text-sm text-blue-950 mb-1">Pembedaan Data Awal Excel &amp; Transaksi Baru</span>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-blue-900/90 leading-relaxed">
+              <p>
+                📁 <strong>Data Awal Bawaan Excel (s.d. Akhir 2025)</strong>: Saldo awal dikunci tepat <strong>Rp 32.425.000</strong> sesuai angka resmi file Excel (Sheet Pengeluaran sel C140).
+              </p>
+              <p>
+                ⚡ <strong>Data Input Baru (Tahun Berjalan / Hari Ini)</strong>: Seluruh penerimaan iuran dan pengeluaran santunan baru dicatat terpisah dan otomatis menambah/mengurangi Saldo Kas Tersedia secara real-time.
+              </p>
             </div>
           </div>
         </div>

@@ -72,16 +72,23 @@ function getYearReportData(year, members) {
   const expenses = db.prepare('SELECT * FROM expenses WHERE year = ? ORDER BY date ASC, id ASC').all(year);
   const totalExpenseYear = expenses.reduce((sum, e) => sum + e.amount, 0);
 
-  // Saldo awal (semua pemasukan kas sebelum tahun ini dikurangi pengeluaran, mengecualikan pengurus bebas kas)
-  const priorIncome = db.prepare(`
-    SELECT SUM(c.amount) as total
-    FROM contributions c
-    JOIN members m ON c.member_id = m.id
-    WHERE c.year < ? AND c.status = 'LUNAS'
-      AND (m.officer_role IS NULL OR m.officer_role NOT IN ('KETUA', 'BENDAHARA', 'SEKRETARIS'))
-  `).get(year).total || 0;
-  const priorExpense = db.prepare('SELECT SUM(amount) as total FROM expenses WHERE year < ?').get(year).total || 0;
-  const saldoAwal = priorIncome - priorExpense;
+  // Saldo awal kas
+  let saldoAwal = 0;
+  if (year === 2026) {
+    // Sesuai catatan resmi Excel (Sheet Pengeluaran C140: Rp 32.425.000)
+    const settingInitial = db.prepare('SELECT value FROM settings WHERE key = ?').get('initial_balance_2026');
+    saldoAwal = settingInitial ? parseFloat(settingInitial.value) || 32425000 : 32425000;
+  } else {
+    const priorIncome = db.prepare(`
+      SELECT SUM(c.amount) as total
+      FROM contributions c
+      JOIN members m ON c.member_id = m.id
+      WHERE c.year < ? AND c.status = 'LUNAS'
+        AND (m.officer_role IS NULL OR m.officer_role NOT IN ('KETUA', 'BENDAHARA', 'SEKRETARIS'))
+    `).get(year).total || 0;
+    const priorExpense = db.prepare('SELECT SUM(amount) as total FROM expenses WHERE year < ?').get(year).total || 0;
+    saldoAwal = priorIncome - priorExpense;
+  }
   const saldoAkhir = saldoAwal + totalIncomeYear - totalExpenseYear;
 
   return {

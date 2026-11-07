@@ -170,6 +170,8 @@ async function loadDashboard(selectedYear) {
 
     // Bind stats
     document.getElementById('dashSaldo').innerText = 'Rp ' + formatRp(data.grandTotals.balance);
+    const elSaldoAwal = document.getElementById('dashSaldoAwal');
+    if (elSaldoAwal) elSaldoAwal.innerText = 'Rp ' + formatRp(data.grandTotals.initialBalance || 32425000);
     document.getElementById('dashPemasukan').innerText = 'Rp ' + formatRp(data.grandTotals.totalIncome);
     document.getElementById('dashPengeluaran').innerText = 'Rp ' + formatRp(data.grandTotals.totalExpense);
 
@@ -272,15 +274,29 @@ function renderGrid(data) {
       subInfo = `<div class="text-[10px] text-emerald-700 font-medium">Masuk ${monthNamesIndo[m.join_month || 1]} ${m.join_year}</div>`;
     }
 
+    // Tampilkan penanda jabatan dan status Bebas untuk Ketua, Bendahara, dan Sekretaris
+    const isOfficer = ['KETUA', 'BENDAHARA', 'SEKRETARIS'].includes(m.officer_role);
+    let officerBadge = '';
+    let bebasBadge = '';
+
+    if (isOfficer) {
+      let roleClass = 'badge-officer-ketua';
+      if (m.officer_role === 'BENDAHARA') roleClass = 'badge-officer-bendahara';
+      else if (m.officer_role === 'SEKRETARIS') roleClass = 'badge-officer-sekretaris';
+
+      officerBadge = `<span class="badge-officer ${roleClass}">${m.officer_role}</span>`;
+      bebasBadge = `<span class="badge-bebas">Bebas</span>`;
+    }
+
     tr.innerHTML = `
       <td class="py-2 px-3 text-center font-medium ${isPensiun ? 'text-amber-800 font-bold' : 'text-slate-500'}">${m.member_no}</td>
       <td class="py-2 px-3 font-semibold text-slate-800">
-        <div>${m.name}</div>
+        <div class="flex items-center flex-wrap gap-1">${m.name}${officerBadge}</div>
         ${subInfo}
       </td>
       ${monthCells}
-      <td class="py-2 px-3 text-right font-bold text-slate-900 bg-slate-100/60 text-xs">
-        Rp ${formatRp(m.total)}
+      <td class="py-2 px-3 text-right font-bold text-slate-900 bg-slate-100/60 text-xs whitespace-nowrap">
+        <span>Rp ${formatRp(m.total)}</span>${bebasBadge}
       </td>
     `;
     return tr;
@@ -649,10 +665,19 @@ async function loadMembers() {
     data.members.forEach(m => {
       const tr = document.createElement('tr');
       tr.className = 'hover:bg-slate-50 transition';
+
+      let officerBadge = '';
+      if (m.officer_role) {
+        let roleClass = 'badge-officer-ketua';
+        if (m.officer_role === 'BENDAHARA') roleClass = 'badge-officer-bendahara';
+        else if (m.officer_role === 'SEKRETARIS') roleClass = 'badge-officer-sekretaris';
+        officerBadge = `<span class="badge-officer ${roleClass}">${m.officer_role}</span>`;
+      }
+
       tr.innerHTML = `
         <td class="py-2.5 px-3 text-center text-slate-500 font-medium">${m.member_no}</td>
         <td class="py-2.5 px-4 font-semibold text-slate-800">
-          <div>${m.name}</div>
+          <div class="flex items-center flex-wrap gap-1">${m.name}${officerBadge}</div>
           <div class="text-[10px] text-slate-400 font-normal">
             ${m.status === 'PENSIUN' ? `Pensiun sejak ${m.pensiun_month || 1}/${m.pensiun_year || 2023}` : `Masuk sejak ${m.join_month || 1}/${m.join_year || 2022}`}
           </div>
