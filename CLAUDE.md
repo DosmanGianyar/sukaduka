@@ -58,3 +58,10 @@ git add . ; git commit -m "deploy: update aplikasi sukaduka" ; git push origin m
 - **Web Reverse Proxy:** Nginx (Port 80 -> Port 3000)
 - **Database:** SQLite 3 (`data/sukaduka.db`)
 
+
+
+## Aturan Sesi (lihat juga AGENTS.md)
+
+- **WAJIB** jalankan `git pull --rebase --autostash` di awal setiap sesi sebelum mengerjakan apa pun (project dikerjakan dari banyak PC).
+- Skill prompt engineering tersedia di `.agents/skills/prompt-master/`.
+
